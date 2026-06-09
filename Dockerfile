@@ -19,10 +19,9 @@ FROM node:22-alpine AS assets
 
 WORKDIR /app
 
-COPY package.json package-lock.json .npmrc* ./
-
-# npm ci gagal jika lockfile dibuat di OS lain (Windows → Linux/Alpine).
-# npm install menyesuaikan optional native bindings untuk platform build.
+# Hanya package.json — lockfile Windows tidak kompatibel dengan Linux/Alpine.
+# npm install di container menyelesaikan native bindings untuk platform build.
+COPY package.json .npmrc* ./
 RUN npm install --ignore-scripts --no-audit --no-fund
 
 COPY vite.config.js postcss.config.js tailwind.config.js ./
