@@ -36,7 +36,32 @@ if [ ! -f public/build/manifest.json ]; then
 fi
 
 php artisan config:clear
+
+# Reset penuh tanpa Shell: set RUN_DB_RESET=true di Environment, redeploy, lalu hapus variabel.
+if [ "$RUN_DB_RESET" = "true" ]; then
+    echo "RUN_DB_RESET=true — menjalankan db:reset-data..."
+    php artisan db:reset-data --force
+fi
+
 php artisan migrate --force
+
+# Tier gratis Render tidak punya Shell — seed otomatis jika DB masih kosong.
+# Paksa seed ulang: set RUN_SEED=true di Environment (hapus setelah deploy sukses).
+USER_COUNT=$(php -r "
+require __DIR__.'/vendor/autoload.php';
+\$app = require __DIR__.'/bootstrap/app.php';
+\$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+try {
+    echo (int) \$app->make('db')->table('users')->count();
+} catch (Throwable \$e) {
+    echo 0;
+}
+")
+
+if [ "$RUN_SEED" = "true" ] || [ "$USER_COUNT" = "0" ]; then
+    echo "Menjalankan db:seed (RUN_SEED=${RUN_SEED:-false}, users=${USER_COUNT})..."
+    php artisan db:seed --force
+fi
 
 php artisan config:cache
 php artisan route:cache

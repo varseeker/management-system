@@ -14,6 +14,7 @@ Panduan deploy **Sistem Manajemen Warkop Kayu** ke [Render.com](https://render.c
 
 **Catatan tier gratis:**
 - Web service **tidur** setelah ~15 menit tidak ada traffic → cold start ~30–60 detik saat pertama dibuka.
+- **Shell tidak tersedia** di tier gratis — migrasi & seed jalan otomatis saat deploy (lihat bawah).
 - **Foto peminjaman** disimpan di disk container (sementara). Foto hilang saat redeploy/restart. Data database (user, stok, riwayat) tetap aman di PostgreSQL.
 
 ---
@@ -92,13 +93,21 @@ Output contoh: `base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=`
 
 > Jika `APP_URL` kosong atau `http://localhost`, halaman tampil tanpa styling.
 
-### Isi data awal (seeder)
+### Data awal (seeder) — otomatis, tanpa Shell
 
-Setelah deploy pertama sukses, jalankan seeder sekali via **Shell** di dashboard Render:
+> **Shell Render hanya untuk plan berbayar (Starter+).** Tier gratis **tidak bisa** buka Shell.
 
-```bash
-php artisan db:seed --force
-```
+Tidak perlu Shell — seeder jalan otomatis saat container start jika tabel `users` masih kosong.
+
+| Perintah | Kapan jalan | Butuh Shell? |
+|----------|-------------|:------------:|
+| `migrate --force` | Setiap deploy | Tidak |
+| `db:seed --force` | DB kosong (0 user) | Tidak |
+| `db:reset-data` | Manual via env var | Tidak |
+
+**Paksa seed ulang** (mis. setelah hapus data): di Environment set `RUN_SEED=true` → redeploy → hapus `RUN_SEED` setelah sukses.
+
+**Reset database penuh** tanpa Shell: set `RUN_DB_RESET=true` → redeploy → hapus variabel setelah sukses.
 
 Akun demo setelah seeder — lihat [README.md](README.md#akun-demo-setelah-seeder).
 
@@ -125,13 +134,11 @@ git push
 
 Render otomatis rebuild & deploy. Migrasi database jalan otomatis saat container start.
 
-### Reset database + seeder
+### Reset database + seeder (tanpa Shell)
 
-Via Render Shell:
-
-```bash
-php artisan db:reset-data --force
-```
+1. Environment → tambah `RUN_DB_RESET=true`
+2. Simpan → tunggu redeploy
+3. **Hapus** `RUN_DB_RESET` setelah sukses (cegah reset tiap deploy)
 
 ### Lihat log
 
@@ -145,7 +152,9 @@ Dashboard Render → Web Service → **Logs**
 |----------|------------------|------------|
 | `APP_ENV` | `production` | Otomatis via render.yaml |
 | `APP_DEBUG` | `false` | Jangan `true` di production |
-| `APP_KEY` | auto-generate | Render generate otomatis |
+| `APP_KEY` | `base64:...` | Generate: `php artisan key:generate --show` |
+| `RUN_SEED` | `true` (opsional) | Paksa seed ulang, hapus setelah deploy |
+| `RUN_DB_RESET` | `true` (opsional) | Reset DB penuh, hapus setelah deploy |
 | `APP_URL` | URL Render Anda | **Wajib diset manual** |
 | `DB_CONNECTION` | `pgsql` | Otomatis |
 | `DB_URL` | dari database | Otomatis dari PostgreSQL |
