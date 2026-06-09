@@ -19,11 +19,17 @@ FROM node:22-alpine AS assets
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
+COPY package.json package-lock.json .npmrc* ./
 
-COPY . .
+# npm ci gagal jika lockfile dibuat di OS lain (Windows → Linux/Alpine).
+# npm install menyesuaikan optional native bindings untuk platform build.
+RUN npm install --ignore-scripts --no-audit --no-fund
+
+COPY vite.config.js postcss.config.js tailwind.config.js ./
+COPY resources ./resources
+COPY public ./public
 COPY --from=vendor /app/vendor ./vendor
+
 RUN npm run build
 
 # Stage 3: Production runtime

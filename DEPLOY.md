@@ -141,6 +141,7 @@ Dashboard Render → Web Service → **Logs**
 
 - Cek log build di dashboard Render
 - Pastikan `composer.lock` dan `package-lock.json` ikut di-commit
+- Jika error `npm ci`: Dockerfile memakai `npm install` (lockfile Windows sering gagal di Linux). Push ulang lalu **Manual Deploy** → **Clear build cache & deploy**
 
 ### Error 500 / APP_KEY
 
