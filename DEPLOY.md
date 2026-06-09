@@ -81,14 +81,16 @@ Output contoh: `base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=`
 
 > **Penting:** Jangan ubah `APP_KEY` setelah production dipakai — session & data terenkripsi akan rusak.
 
-### Set APP_URL
+### Set APP_URL (wajib — tanpa ini CSS/JS tidak load)
 
 1. Buka web service → **Environment**
-2. Edit `APP_URL` menjadi URL Render Anda, contoh:
+2. Edit `APP_URL` menjadi URL Render Anda **dengan https**, tanpa trailing slash:
    ```
    https://warkop-inventory.onrender.com
    ```
 3. Simpan → service akan redeploy otomatis
+
+> Jika `APP_URL` kosong atau `http://localhost`, halaman tampil tanpa styling.
 
 ### Isi data awal (seeder)
 
@@ -177,24 +179,33 @@ Jangan pakai `generateValue: true` di `render.yaml` untuk `APP_KEY`.
 
 ### Database connection error (`could not translate host name "dpg-..."`)
 
-Penyebab umum: hostname database tidak lengkap atau env var salah.
+Penyebab: hostname database internal Render (`dpg-xxx-a`) tidak bisa di-resolve DNS.
 
-**Perbaikan di Render Dashboard:**
+**Otomatis (setelah deploy terbaru):** `docker/fix-render-env.sh` mengubah hostname internal ke eksternal saat container start.
+
+**Manual di Render Dashboard (jika masih gagal):**
 
 1. Buka **PostgreSQL** (`warkop-db`) → tab **Info**
-2. Salin **External Database URL** (bukan hostname pendek `dpg-xxx-a` saja)
-   - Format benar: `postgresql://user:pass@dpg-xxx-a.singapore-postgres.render.com:5432/warkop`
-3. Buka **Web Service** → **Environment**
-4. Set / perbarui:
-   - `DATABASE_URL` = External Database URL (paste penuh)
-   - `DB_URL` = sama dengan `DATABASE_URL`
+2. Salin **External Database URL** lengkap:
+   `postgresql://user:pass@dpg-xxx-a.singapore-postgres.render.com:5432/warkop`
+3. **Web Service** → **Environment** → set:
+   - `DATABASE_URL` dan `DB_URL` = URL tersebut
    - `DB_CONNECTION` = `pgsql`
    - `DB_SSLMODE` = `require`
-5. **Hapus** env var manual yang bentrok: `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (biarkan Laravel parse dari URL)
-6. Pastikan web service dan database **region sama** (Singapore)
-7. **Manual Deploy** → redeploy
+   - `RENDER_REGION` = `singapore`
+4. **Hapus** `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
+5. Redeploy
 
-> Jika pakai **Internal URL** (`dpg-xxx-a` tanpa domain), hanya berfungsi di jaringan privat Render region yang sama. Jika DNS gagal, gunakan **External URL**.
+### CSS/JS tidak load (halaman tanpa styling)
+
+Penyebab umum:
+
+| Penyebab | Perbaikan |
+|----------|-----------|
+| `APP_URL` belum diset | Set ke `https://nama-app.onrender.com` |
+| `APP_KEY` salah format | `php artisan key:generate --show` → paste ke Render |
+| File `public/hot` ada | Dihapus otomatis saat start; jangan commit file ini |
+| Vite build gagal | Cek log build Docker, pastikan `public/build/manifest.json` ada |
 
 ### Database connection error (umum)
 

@@ -3,6 +3,8 @@ set -e
 
 cd /var/www/html
 
+. /var/www/html/docker/fix-render-env.sh
+
 export PORT="${PORT:-8080}"
 envsubst '${PORT}' < /etc/nginx/http.d/default.conf.template > /etc/nginx/http.d/default.conf
 
@@ -22,6 +24,16 @@ case "$APP_KEY" in
         exit 1
         ;;
 esac
+
+if [ -z "$APP_URL" ] || [ "$APP_URL" = "http://localhost" ]; then
+    echo "WARNING: APP_URL belum diset — CSS/JS mungkin tidak load."
+    echo "Set APP_URL di Render Environment, contoh: https://warkop-inventory.onrender.com"
+fi
+
+if [ ! -f public/build/manifest.json ]; then
+    echo "ERROR: public/build/manifest.json tidak ditemukan — Vite build gagal."
+    exit 1
+fi
 
 php artisan config:clear
 php artisan migrate --force

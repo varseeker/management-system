@@ -29,7 +29,8 @@ COPY resources ./resources
 COPY public ./public
 COPY --from=vendor /app/vendor ./vendor
 
-RUN npm run build
+RUN npm run build \
+    && test -f public/build/manifest.json
 
 # Stage 3: Production runtime
 FROM php:8.3-fpm-alpine
