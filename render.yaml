@@ -40,8 +40,10 @@ services:
         value: production
       - key: APP_DEBUG
         value: "false"
+      # JANGAN pakai generateValue — Laravel butuh format base64:...
+      # Generate lokal: php artisan key:generate --show
       - key: APP_KEY
-        generateValue: true
+        sync: false
       - key: APP_URL
         sync: false
       - key: LOG_CHANNEL
@@ -50,10 +52,17 @@ services:
         value: warning
       - key: DB_CONNECTION
         value: pgsql
+      # Render auto-link biasanya pakai DATABASE_URL; Laravel baca keduanya.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: warkop-db
+          property: connectionString
       - key: DB_URL
         fromDatabase:
           name: warkop-db
           property: connectionString
+      - key: DB_SSLMODE
+        value: require
       - key: SESSION_DRIVER
         value: database
       - key: SESSION_SECURE_COOKIE

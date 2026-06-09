@@ -64,6 +64,23 @@ Render otomatis membuat:
 
 ## Langkah 3 — Konfigurasi setelah deploy
 
+### Set APP_KEY (wajib)
+
+Render `generateValue` **tidak cocok** untuk Laravel. Generate manual:
+
+```powershell
+# Di komputer lokal (folder proyek)
+php artisan key:generate --show
+```
+
+Output contoh: `base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=`
+
+1. Buka web service → **Environment**
+2. Set `APP_KEY` = paste output **lengkap** (termasuk awalan `base64:`)
+3. Simpan → redeploy
+
+> **Penting:** Jangan ubah `APP_KEY` setelah production dipakai — session & data terenkripsi akan rusak.
+
 ### Set APP_URL
 
 1. Buka web service → **Environment**
@@ -143,15 +160,46 @@ Dashboard Render → Web Service → **Logs**
 - Pastikan `composer.lock` dan `package-lock.json` ikut di-commit
 - Jika error `npm ci`: Dockerfile memakai `npm install` (lockfile Windows sering gagal di Linux). Push ulang lalu **Manual Deploy** → **Clear build cache & deploy**
 
-### Error 500 / APP_KEY
+### Error 500 / APP_KEY / "Unsupported cipher or incorrect key length"
 
-- Pastikan `APP_KEY` ada di Environment
-- Redeploy: **Manual Deploy** → **Clear build cache & deploy**
+`APP_KEY` dari Render auto-generate **salah format**. Laravel butuh:
 
-### Database connection error
+```
+base64:...   ← harus ada awalan ini
+```
+
+Perbaikan:
+1. Lokal: `php artisan key:generate --show`
+2. Render Environment → set `APP_KEY` = hasil command (paste penuh)
+3. Redeploy
+
+Jangan pakai `generateValue: true` di `render.yaml` untuk `APP_KEY`.
+
+### Database connection error (`could not translate host name "dpg-..."`)
+
+Penyebab umum: hostname database tidak lengkap atau env var salah.
+
+**Perbaikan di Render Dashboard:**
+
+1. Buka **PostgreSQL** (`warkop-db`) → tab **Info**
+2. Salin **External Database URL** (bukan hostname pendek `dpg-xxx-a` saja)
+   - Format benar: `postgresql://user:pass@dpg-xxx-a.singapore-postgres.render.com:5432/warkop`
+3. Buka **Web Service** → **Environment**
+4. Set / perbarui:
+   - `DATABASE_URL` = External Database URL (paste penuh)
+   - `DB_URL` = sama dengan `DATABASE_URL`
+   - `DB_CONNECTION` = `pgsql`
+   - `DB_SSLMODE` = `require`
+5. **Hapus** env var manual yang bentrok: `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (biarkan Laravel parse dari URL)
+6. Pastikan web service dan database **region sama** (Singapore)
+7. **Manual Deploy** → redeploy
+
+> Jika pakai **Internal URL** (`dpg-xxx-a` tanpa domain), hanya berfungsi di jaringan privat Render region yang sama. Jika DNS gagal, gunakan **External URL**.
+
+### Database connection error (umum)
 
 - Pastikan PostgreSQL status **Available**
-- Cek `DB_URL` terhubung ke database yang benar
+- Cek `DATABASE_URL` / `DB_URL` berisi URL lengkap, bukan hostname pendek
 
 ### CSS/JS tidak load
 
