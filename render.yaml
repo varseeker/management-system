@@ -1,0 +1,66 @@
+# Render Blueprint — deploy otomatis web + database PostgreSQL (gratis)
+# Docs: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: warkop-db
+    databaseName: warkop
+    user: warkop
+    plan: free
+
+services:
+  - type: web
+    name: warkop-inventory
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /login
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - app/**
+        - bootstrap/**
+        - config/**
+        - database/**
+        - docker/**
+        - public/**
+        - resources/**
+        - routes/**
+        - storage/**
+        - Dockerfile
+        - composer.json
+        - composer.lock
+        - package.json
+        - package-lock.json
+        - vite.config.js
+        - render.yaml
+    envVars:
+      - key: APP_NAME
+        value: Warkop Kayu
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: warkop-db
+          property: connectionString
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: FILESYSTEM_DISK
+        value: local
