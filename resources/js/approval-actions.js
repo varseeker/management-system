@@ -9,66 +9,73 @@ function escapeHtml(value) {
 const APPROVAL_CONFIG = {
     approve: {
         title: 'Konfirmasi Persetujuan',
-        submitLabel: 'Ya, Setujui Pengajuan',
+        submitLabel: 'Setujui',
         submitClass: 'btn-success',
+        modalClass: 'approval-modal-content--approve',
+        iconClass: 'bi-check-lg',
         noteLabel: 'Catatan Persetujuan',
         notePlaceholder: 'Contoh: Disetujui untuk keperluan operasional harian.',
-        noteHint: 'Catatan persetujuan wajib diisi sebelum mengonfirmasi.',
-        confirmQuestion: 'Anda akan menyetujui pengajuan peminjaman ini.',
+        noteHint: 'Wajib diisi sebelum mengonfirmasi.',
+        confirmQuestion: 'Setujui pengajuan peminjaman berikut?',
     },
     reject: {
         title: 'Konfirmasi Penolakan',
-        submitLabel: 'Ya, Tolak Pengajuan',
+        submitLabel: 'Tolak',
         submitClass: 'btn-danger',
+        modalClass: 'approval-modal-content--reject',
+        iconClass: 'bi-x-lg',
         noteLabel: 'Alasan Penolakan',
-        notePlaceholder: 'Contoh: Stok tidak mencukupi / jangka waktu tidak sesuai ketentuan.',
-        noteHint: 'Alasan penolakan wajib diisi sebelum mengonfirmasi.',
-        confirmQuestion: 'Anda akan menolak pengajuan peminjaman ini.',
+        notePlaceholder: 'Contoh: Stok tidak mencukupi / jangka waktu tidak sesuai.',
+        noteHint: 'Wajib diisi sebelum mengonfirmasi.',
+        confirmQuestion: 'Tolak pengajuan peminjaman berikut?',
     },
 };
+
+function summaryItem(label, value, extraClass = '') {
+    return `
+        <div class="approval-summary-item ${extraClass}">
+            <span class="approval-summary-label">${escapeHtml(label)}</span>
+            <span class="approval-summary-value">${value}</span>
+        </div>
+    `;
+}
 
 function buildSummaryHtml(data) {
     const stockBadge =
         data.stockSufficient === '1'
-            ? `<span class="badge bg-success">${escapeHtml(data.stock)} tersedia</span>`
-            : `<span class="badge bg-danger">${escapeHtml(data.stock)} (kurang)</span>`;
+            ? `<span class="badge bg-success-subtle text-success border border-success-subtle">${escapeHtml(data.stock)}</span>`
+            : `<span class="badge bg-danger-subtle text-danger border border-danger-subtle">${escapeHtml(data.stock)} kurang</span>`;
+
+    const photoBlock = data.photoUrl
+        ? `<a href="${escapeHtml(data.photoUrl)}" target="_blank" rel="noopener" class="approval-summary-photo" title="Lihat foto pengajuan">
+                <img src="${escapeHtml(data.photoUrl)}" alt="Foto pengajuan" loading="lazy" decoding="async">
+                <span class="approval-summary-photo__zoom"><i class="bi bi-zoom-in"></i></span>
+           </a>`
+        : `<div class="approval-summary-photo approval-summary-photo--empty" aria-hidden="true">
+                <i class="bi bi-image"></i>
+           </div>`;
+
+    const descriptionBlock = data.description
+        ? summaryItem(
+              'Deskripsi',
+              `<span class="approval-summary-desc" title="${escapeHtml(data.description)}">${escapeHtml(data.description)}</span>`,
+              'approval-summary-item--full',
+          )
+        : '';
 
     return `
-        <p class="text-muted small mb-3">${escapeHtml(data.confirmQuestion)}</p>
         <div class="approval-summary-card">
-            <div class="row g-2 small">
-                <div class="col-sm-6">
-                    <span class="approval-summary-label">Peminjam</span>
-                    <div class="fw-semibold">${escapeHtml(data.borrower)}</div>
+            <div class="approval-summary-layout">
+                ${photoBlock}
+                <div class="approval-summary-grid">
+                    ${summaryItem('Peminjam', escapeHtml(data.borrower))}
+                    ${summaryItem('Barang', escapeHtml(data.item))}
+                    ${summaryItem('Jumlah', `${escapeHtml(data.quantity)} unit`)}
+                    ${summaryItem('Stok', stockBadge)}
+                    ${summaryItem('Tgl. Pinjam', escapeHtml(data.borrowDate))}
+                    ${summaryItem('Rencana Kembali', escapeHtml(data.returnDate))}
+                    ${descriptionBlock}
                 </div>
-                <div class="col-sm-6">
-                    <span class="approval-summary-label">Barang</span>
-                    <div class="fw-semibold">${escapeHtml(data.item)}</div>
-                </div>
-                <div class="col-4">
-                    <span class="approval-summary-label">Jumlah</span>
-                    <div class="fw-semibold">${escapeHtml(data.quantity)} unit</div>
-                </div>
-                <div class="col-4">
-                    <span class="approval-summary-label">Tanggal Pinjam</span>
-                    <div class="fw-semibold">${escapeHtml(data.borrowDate)}</div>
-                </div>
-                <div class="col-4">
-                    <span class="approval-summary-label">Rencana Kembali</span>
-                    <div class="fw-semibold">${escapeHtml(data.returnDate)}</div>
-                </div>
-                <div class="col-12">
-                    <span class="approval-summary-label">Stok Tersedia</span>
-                    <div>${stockBadge}</div>
-                </div>
-                ${
-                    data.description
-                        ? `<div class="col-12">
-                            <span class="approval-summary-label">Deskripsi</span>
-                            <div>${escapeHtml(data.description)}</div>
-                           </div>`
-                        : ''
-                }
             </div>
         </div>
     `;
@@ -76,14 +83,17 @@ function buildSummaryHtml(data) {
 
 export function initApprovalActions() {
     const modal = document.getElementById('approvalActionModal');
+    const modalContent = modal?.querySelector('.approval-modal-content');
 
-    if (!modal) {
+    if (!modal || !modalContent) {
         return;
     }
 
     const form = document.getElementById('approvalActionForm');
     const summary = document.getElementById('approvalModalSummary');
     const title = document.getElementById('approvalActionModalLabel');
+    const subtitle = document.getElementById('approvalModalSubtitle');
+    const icon = document.getElementById('approvalModalIcon');
     const note = document.getElementById('approvalModalNote');
     const noteLabel = document.getElementById('approvalModalNoteLabel');
     const noteHint = document.getElementById('approvalModalNoteHint');
@@ -111,7 +121,19 @@ export function initApprovalActions() {
         form.action = trigger.dataset.url ?? '';
         form.dataset.action = action;
 
+        modalContent.classList.remove('approval-modal-content--approve', 'approval-modal-content--reject');
+        modalContent.classList.add(config.modalClass);
+
         title.textContent = config.title;
+
+        if (subtitle) {
+            subtitle.textContent = config.confirmQuestion;
+        }
+
+        if (icon) {
+            icon.innerHTML = `<i class="bi ${config.iconClass}"></i>`;
+        }
+
         noteLabel.textContent = config.noteLabel;
         note.placeholder = config.notePlaceholder;
         noteHint.textContent = config.noteHint;
@@ -119,11 +141,10 @@ export function initApprovalActions() {
         note.classList.remove('is-invalid');
         noteError.textContent = '';
 
-        submitBtn.textContent = config.submitLabel;
-        submitBtn.className = `btn ${config.submitClass}`;
+        submitBtn.innerHTML = `<i class="bi ${config.iconClass} me-1"></i> ${config.submitLabel}`;
+        submitBtn.className = `btn btn-sm ${config.submitClass}`;
 
         summary.innerHTML = buildSummaryHtml({
-            confirmQuestion: config.confirmQuestion,
             borrower: trigger.dataset.borrower ?? '-',
             item: trigger.dataset.item ?? '-',
             quantity: trigger.dataset.quantity ?? '-',
@@ -132,11 +153,12 @@ export function initApprovalActions() {
             stock: trigger.dataset.stock ?? '0',
             stockSufficient: trigger.dataset.stockSufficient ?? '0',
             description: trigger.dataset.description ?? '',
+            photoUrl: trigger.dataset.photoUrl ?? '',
         });
 
         if (window.bootstrap?.Modal) {
             window.bootstrap.Modal.getOrCreateInstance(modal).show();
-            window.setTimeout(() => note.focus(), 250);
+            window.setTimeout(() => note.focus(), 200);
         }
     });
 
@@ -157,19 +179,24 @@ export function initApprovalActions() {
         note.classList.remove('is-invalid');
         noteError.textContent = '';
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memproses...';
+        submitBtn.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-1"></span> Memproses...';
     });
 
     modal.addEventListener('hidden.bs.modal', () => {
+        const action = form.dataset.action || 'approve';
+
         form.reset();
         form.action = '';
+        form.dataset.action = '';
         note.classList.remove('is-invalid');
         noteError.textContent = '';
         submitBtn.disabled = false;
 
-        const action = form.dataset.action;
+        modalContent.classList.remove('approval-modal-content--approve', 'approval-modal-content--reject');
+
         const config = APPROVAL_CONFIG[action] ?? APPROVAL_CONFIG.approve;
-        submitBtn.textContent = config.submitLabel;
-        submitBtn.className = `btn ${config.submitClass}`;
+        submitBtn.innerHTML = `<i class="bi ${config.iconClass} me-1"></i> ${config.submitLabel}`;
+        submitBtn.className = `btn btn-sm ${config.submitClass}`;
     });
 }

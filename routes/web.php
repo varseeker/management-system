@@ -27,8 +27,7 @@ use App\Http\Controllers\BorrowingApprovalController;
 use App\Http\Controllers\BorrowingApprovalActionController;
 
 use App\Http\Controllers\ExportController;
-use App\Support\BorrowingImageStorage;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Http\Controllers\BorrowingImageController;
 
 Route::get('/', function () {
 
@@ -50,16 +49,9 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/borrowings/images/{path}', function (string $path): BinaryFileResponse {
-        $path = str_replace(['..', '\\'], ['', '/'], $path);
-        $absolute = BorrowingImageStorage::absolutePath($path);
-
-        abort_unless($absolute && is_file($absolute), 404);
-
-        return response()->file($absolute, [
-            'Cache-Control' => 'public, max-age=31536000, immutable',
-        ]);
-    })->where('path', '.*')->name('borrowings.image');
+    Route::get('/borrowings/images/{path}', [BorrowingImageController::class, 'show'])
+        ->where('path', '.*')
+        ->name('borrowings.image');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 

@@ -199,7 +199,8 @@
                                     data-return-date="{{ $borrowing->expected_return_date ?? '-' }}"
                                     data-stock="{{ $borrowing->item->stock }}"
                                     data-stock-sufficient="{{ $borrowing->item->stock >= $borrowing->quantity ? '1' : '0' }}"
-                                    data-description="{{ $borrowing->description ?? $borrowing->note ?? '' }}">
+                                    data-description="{{ $borrowing->description ?? $borrowing->note ?? '' }}"
+                                    data-photo-url="{{ \App\Support\BorrowingImageStorage::thumbUrl($borrowing->borrow_image) ?? \App\Support\BorrowingImageStorage::url($borrowing->borrow_image) ?? '' }}">
                                     <i class="bi bi-check-lg"></i> Setujui
                                 </button>
 
@@ -214,7 +215,8 @@
                                     data-return-date="{{ $borrowing->expected_return_date ?? '-' }}"
                                     data-stock="{{ $borrowing->item->stock }}"
                                     data-stock-sufficient="{{ $borrowing->item->stock >= $borrowing->quantity ? '1' : '0' }}"
-                                    data-description="{{ $borrowing->description ?? $borrowing->note ?? '' }}">
+                                    data-description="{{ $borrowing->description ?? $borrowing->note ?? '' }}"
+                                    data-photo-url="{{ \App\Support\BorrowingImageStorage::thumbUrl($borrowing->borrow_image) ?? \App\Support\BorrowingImageStorage::url($borrowing->borrow_image) ?? '' }}">
                                     <i class="bi bi-x-lg"></i> Tolak
                                 </button>
 

@@ -2,19 +2,18 @@
 
 namespace Database\Seeders\Support;
 
+use Illuminate\Support\Facades\File;
+
 class PlaceholderImage
 {
     public static function create(string $relativePath, string $label, array $rgb = [70, 130, 180]): string
     {
-        if (! str_starts_with($relativePath, 'uploads/')) {
-            $relativePath = 'uploads/borrowings/' . ltrim($relativePath, '/');
-        }
-
-        $fullPath = public_path($relativePath);
+        $relativePath = self::normalizeRelativePath($relativePath);
+        $fullPath = storage_path('app/public/' . $relativePath);
         $directory = dirname($fullPath);
 
         if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
+            File::makeDirectory($directory, 0755, true);
         }
 
         if (extension_loaded('gd')) {
@@ -32,6 +31,21 @@ class PlaceholderImage
             );
         }
 
-        return str_replace('\\', '/', $relativePath);
+        return $relativePath;
+    }
+
+    private static function normalizeRelativePath(string $relativePath): string
+    {
+        $relativePath = str_replace('\\', '/', $relativePath);
+
+        if (str_starts_with($relativePath, 'uploads/borrowings/')) {
+            $relativePath = substr($relativePath, strlen('uploads/'));
+        }
+
+        if (! str_starts_with($relativePath, 'borrowings/')) {
+            $relativePath = 'borrowings/' . ltrim($relativePath, '/');
+        }
+
+        return $relativePath;
     }
 }

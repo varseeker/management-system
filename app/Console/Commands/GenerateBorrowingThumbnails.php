@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\BorrowingImageStorage;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -20,37 +21,40 @@ class GenerateBorrowingThumbnails extends Command
         }
 
         $created = 0;
-        $basePath = public_path('uploads/borrowings');
-
-        if (! is_dir($basePath)) {
-            $this->info('Tidak ada folder uploads/borrowings.');
-
-            return self::SUCCESS;
-        }
+        $basePaths = [
+            storage_path('app/public/borrowings'),
+            public_path('uploads/borrowings'),
+        ];
 
         foreach (['pengajuan', 'pengembalian'] as $prefix) {
-            $directory = "{$basePath}/{$prefix}";
+            foreach ($basePaths as $basePath) {
+                $directory = "{$basePath}/{$prefix}";
 
-            if (! is_dir($directory)) {
-                continue;
-            }
-
-            $thumbDirectory = "{$directory}/thumbs";
-
-            if (! is_dir($thumbDirectory)) {
-                File::makeDirectory($thumbDirectory, 0755, true);
-            }
-
-            foreach (glob("{$directory}/*.{jpg,jpeg,png,webp}", GLOB_BRACE) ?: [] as $imagePath) {
-                $filename = basename($imagePath);
-                $thumbPath = "{$thumbDirectory}/{$filename}";
-
-                if (is_file($thumbPath)) {
+                if (! is_dir($directory)) {
                     continue;
                 }
 
-                if ($this->createThumb($imagePath, $thumbPath)) {
-                    $created++;
+                $thumbDirectory = "{$directory}/thumbs";
+
+                if (! is_dir($thumbDirectory)) {
+                    File::makeDirectory($thumbDirectory, 0755, true);
+                }
+
+                foreach (glob("{$directory}/*.{jpg,jpeg,png,webp}", GLOB_BRACE) ?: [] as $imagePath) {
+                    if (str_contains($imagePath, '/thumbs/')) {
+                        continue;
+                    }
+
+                    $filename = basename($imagePath);
+                    $thumbPath = "{$thumbDirectory}/{$filename}";
+
+                    if (is_file($thumbPath)) {
+                        continue;
+                    }
+
+                    if ($this->createThumb($imagePath, $thumbPath)) {
+                        $created++;
+                    }
                 }
             }
         }

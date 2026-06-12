@@ -126,7 +126,7 @@ class BorrowingSeeder extends Seeder
             $expectedReturn = Carbon::parse($borrowDate)->addDays($record['loan_days'])->toDateString();
 
             $borrowImage = PlaceholderImage::create(
-                'uploads/borrowings/seed/pengajuan-' . ($index + 1) . '.png',
+                'borrowings/seed/pengajuan-' . ($index + 1) . '.png',
                 $record['borrow_label'],
                 [52, 120, 180]
             );
@@ -152,7 +152,7 @@ class BorrowingSeeder extends Seeder
                 $data['return_condition'] = $record['return_condition'];
                 $data['return_note'] = $record['return_note'] ?? null;
                 $data['return_image'] = PlaceholderImage::create(
-                    'uploads/borrowings/seed/pengembalian-' . ($index + 1) . '.png',
+                    'borrowings/seed/pengembalian-' . ($index + 1) . '.png',
                     $record['return_label'] ?? 'Pengembalian',
                     [46, 139, 87]
                 );

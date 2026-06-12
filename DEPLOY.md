@@ -12,10 +12,19 @@ Panduan deploy **Sistem Manajemen Warkop Kayu** ke [Render.com](https://render.c
 | Maintenance | Dashboard web, tanpa SSH wajib |
 | Region | Singapore (dekat Indonesia) |
 
-**Catatan tier gratis:**
-- Web service **tidur** setelah ~15 menit tidak ada traffic → cold start ~30–60 detik saat pertama dibuka.
-- **Shell tidak tersedia** di tier gratis — migrasi & seed jalan otomatis saat deploy (lihat bawah).
-- **Foto peminjaman** disimpan di disk container (sementara). Foto hilang saat redeploy/restart. Data database (user, stok, riwayat) tetap aman di PostgreSQL.
+### Foto peminjaman tidak muncul / error 404
+
+Penyebab umum:
+
+| Penyebab | Perbaikan |
+|----------|-----------|
+| Path foto lama `uploads/...` | Migrasi otomatis saat deploy; redeploy setelah push kode terbaru |
+| File seed hilang setelah redeploy | Set `RUN_SEED=true` → redeploy → hapus variabel |
+| Upload baru tidak tampil | Pastikan `storage:link` jalan (otomatis di `start.sh`) |
+
+Foto dilayani via `/borrowings/images/...` (Laravel), bukan file statis langsung.
+
+> **Tier gratis:** disk container **sementara** — foto hilang saat redeploy/restart. Data database tetap aman. Untuk foto permanen, pertimbangkan Fly.io (disk persisten) atau S3.
 
 ---
 

@@ -69,4 +69,15 @@ php artisan view:cache
 
 php artisan storage:link 2>/dev/null || true
 
+mkdir -p \
+    storage/app/public/borrowings/pengajuan/thumbs \
+    storage/app/public/borrowings/pengembalian/thumbs \
+    storage/app/public/borrowings/seed \
+    public/uploads/borrowings/pengajuan \
+    public/uploads/borrowings/pengembalian
+
+chown -R www-data:www-data storage public/uploads 2>/dev/null || true
+
+php artisan borrowings:sync-images-to-storage --quiet 2>/dev/null || true
+
 exec supervisord -c /etc/supervisord.conf
