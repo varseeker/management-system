@@ -133,11 +133,11 @@
 
                         <th class="js-sort-col">Deskripsi</th>
 
-                        <th>Foto Pengajuan</th>
+                        <th class="text-nowrap">Foto Pengajuan</th>
 
                         <th class="js-sort-col" data-sort-type="number">Stok Tersedia</th>
 
-                        <th width="280">Tindakan</th>
+                        <th width="160">Tindakan</th>
 
                     </tr>
 
@@ -165,6 +165,8 @@
                             @include('partials.borrowing-image', [
                                 'path' => $borrowing->borrow_image,
                                 'label' => 'Foto pengajuan',
+                                'variant' => 'thumb',
+                                'size' => 60,
                             ])
                         </td>
 
@@ -184,55 +186,37 @@
 
                         <td>
 
-                            <div class="d-flex flex-column gap-2">
+                            <div class="d-flex flex-column flex-sm-row gap-2">
 
-                                <form action="{{ route('approvals.approve', $borrowing) }}" method="POST">
+                                <button type="button"
+                                    class="btn btn-success btn-sm js-approval-open"
+                                    data-action="approve"
+                                    data-url="{{ route('approvals.approve', $borrowing) }}"
+                                    data-borrower="{{ $borrowing->user->name }}"
+                                    data-item="{{ $borrowing->item->name }}"
+                                    data-quantity="{{ $borrowing->quantity }}"
+                                    data-borrow-date="{{ $borrowing->borrow_date }}"
+                                    data-return-date="{{ $borrowing->expected_return_date ?? '-' }}"
+                                    data-stock="{{ $borrowing->item->stock }}"
+                                    data-stock-sufficient="{{ $borrowing->item->stock >= $borrowing->quantity ? '1' : '0' }}"
+                                    data-description="{{ $borrowing->description ?? $borrowing->note ?? '' }}">
+                                    <i class="bi bi-check-lg"></i> Setujui
+                                </button>
 
-                                    @csrf
-
-                                    <textarea name="approval_note"
-
-                                        class="form-control form-control-sm mb-1"
-
-                                        rows="2"
-
-                                        placeholder="Catatan persetujuan (wajib)"
-
-                                        required></textarea>
-
-                                    <button class="btn btn-success btn-sm w-100"
-
-                                        onclick="return confirm('Setujui pengajuan peminjaman ini?')">
-
-                                        <i class="bi bi-check-lg"></i> Setujui
-
-                                    </button>
-
-                                </form>
-
-                                <form action="{{ route('approvals.reject', $borrowing) }}" method="POST">
-
-                                    @csrf
-
-                                    <textarea name="approval_note"
-
-                                        class="form-control form-control-sm mb-1"
-
-                                        rows="2"
-
-                                        placeholder="Alasan penolakan (wajib)"
-
-                                        required></textarea>
-
-                                    <button class="btn btn-danger btn-sm w-100"
-
-                                        onclick="return confirm('Tolak pengajuan peminjaman ini?')">
-
-                                        <i class="bi bi-x-lg"></i> Tolak
-
-                                    </button>
-
-                                </form>
+                                <button type="button"
+                                    class="btn btn-outline-danger btn-sm js-approval-open"
+                                    data-action="reject"
+                                    data-url="{{ route('approvals.reject', $borrowing) }}"
+                                    data-borrower="{{ $borrowing->user->name }}"
+                                    data-item="{{ $borrowing->item->name }}"
+                                    data-quantity="{{ $borrowing->quantity }}"
+                                    data-borrow-date="{{ $borrowing->borrow_date }}"
+                                    data-return-date="{{ $borrowing->expected_return_date ?? '-' }}"
+                                    data-stock="{{ $borrowing->item->stock }}"
+                                    data-stock-sufficient="{{ $borrowing->item->stock >= $borrowing->quantity ? '1' : '0' }}"
+                                    data-description="{{ $borrowing->description ?? $borrowing->note ?? '' }}">
+                                    <i class="bi bi-x-lg"></i> Tolak
+                                </button>
 
                             </div>
 
@@ -313,7 +297,7 @@
 
                         <th class="js-sort-col" data-sort-type="date">Rencana Kembali</th>
 
-                        <th>Foto Pengajuan</th>
+                        <th class="text-nowrap">Foto Pengajuan</th>
 
                         <th width="120">Tindakan</th>
 
@@ -341,6 +325,8 @@
                             @include('partials.borrowing-image', [
                                 'path' => $borrowing->borrow_image,
                                 'label' => 'Foto pengajuan',
+                                'variant' => 'thumb',
+                                'size' => 60,
                             ])
                         </td>
 
@@ -433,7 +419,7 @@
 
                         <th class="js-sort-col">Catatan Persetujuan</th>
 
-                        <th>Foto</th>
+                        <th class="text-nowrap">Dokumentasi Foto</th>
 
                         <th>Kondisi Pengembalian</th>
 
@@ -470,7 +456,10 @@
                         <td data-sort="{{ $borrowing->approval_note ?? '' }}">{{ $borrowing->approval_note ?? '-' }}</td>
 
                         <td>
-                            @include('partials.borrowing-images-compare', ['borrowing' => $borrowing])
+                            @include('partials.borrowing-images-compare', [
+                                'borrowing' => $borrowing,
+                                'layout' => 'inline',
+                            ])
                         </td>
 
                         <td>
@@ -502,6 +491,8 @@
 </div>
 
 
+
+@include('partials.approval-action-modal')
 
 @endsection
 

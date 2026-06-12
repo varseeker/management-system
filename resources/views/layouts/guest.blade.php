@@ -20,7 +20,7 @@
 
                 <div class="card shadow border-0 rounded-4">
 
-                    <div class="card-body p-5">
+                    <div class="card-body guest-card-body">
 
                         <div class="text-center mb-4">
 
@@ -45,6 +45,10 @@
         </div>
 
     </div>
+
+    @include('partials.toast-container')
+    @include('partials.flash-error-modal')
+    @include('partials.flash-messages')
 
 </body>
 

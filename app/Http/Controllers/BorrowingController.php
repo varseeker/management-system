@@ -36,11 +36,18 @@ class BorrowingController extends Controller
             $statsQuery->where('user_id', Auth::id());
         }
 
+        $aggregates = (clone $statsQuery)->selectRaw("
+            COUNT(*) as total,
+            SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+            SUM(CASE WHEN status = 'returned' THEN 1 ELSE 0 END) as returned
+        ")->first();
+
         $stats = [
-            'total' => (clone $statsQuery)->count(),
-            'pending' => (clone $statsQuery)->where('status', 'pending')->count(),
-            'approved' => (clone $statsQuery)->where('status', 'approved')->count(),
-            'returned' => (clone $statsQuery)->where('status', 'returned')->count(),
+            'total' => (int) $aggregates->total,
+            'pending' => (int) $aggregates->pending,
+            'approved' => (int) $aggregates->approved,
+            'returned' => (int) $aggregates->returned,
         ];
 
         return view('borrowings.index', compact(

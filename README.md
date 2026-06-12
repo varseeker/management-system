@@ -72,7 +72,7 @@ Buka http://127.0.0.1:8000
 | Peran   | Nama         | Surel                          | Kata sandi |
 |---------|--------------|--------------------------------|------------|
 | Admin   | Admin Sistem | admin@warkopkayu.test          | password   |
-| Pemilik | Dzaky Poke   | dzaky.poke@warkopkayu.test      | password   |
+| Pemilik | Dzaky Poke   | dzaky.poke@warkopkayu.test     | password   |
 | Staf    | Letoy        | letoy@warkopkayu.test          | password   |
 | Staf    | Ketoy        | ketoy@warkopkayu.test          | password   |
 

@@ -26,22 +26,68 @@
             Rencana kembali: <strong>{{ $borrowing->expected_return_date ?? '-' }}</strong>
         </div>
 
-        @if($borrowing->borrow_image)
-        <div class="mb-4 p-3 bg-light rounded">
-            <p class="fw-semibold mb-2 small">Foto kondisi saat pengajuan peminjaman:</p>
-            @include('partials.borrowing-image', [
-                'path' => $borrowing->borrow_image,
-                'label' => 'Foto saat pengajuan',
-                'size' => 160,
-            ])
-        </div>
-        @endif
-
         <form action="{{ route('borrowings.return', $borrowing) }}"
             method="POST"
             enctype="multipart/form-data">
 
             @csrf
+
+            <div class="mb-4">
+                <h6 class="fw-semibold mb-3">
+                    <i class="bi bi-images text-primary"></i> Dokumentasi Foto Kondisi Barang
+                </h6>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="borrowing-photo-panel borrowing-photo-panel--borrow h-100">
+                            <div class="borrowing-photo-panel__header">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                                Foto Saat Pengajuan
+                            </div>
+                            <div class="borrowing-photo-panel__body text-center">
+                                <p class="borrowing-photo-panel__hint">
+                                    Referensi kondisi barang ketika pengajuan disetujui.
+                                </p>
+                                @if($borrowing->borrow_image)
+                                    @include('partials.borrowing-image', [
+                                        'path' => $borrowing->borrow_image,
+                                        'label' => 'Foto saat pengajuan',
+                                        'variant' => 'preview',
+                                        'thumb' => false,
+                                        'lazy' => false,
+                                    ])
+                                @else
+                                    @include('partials.borrowing-image', [
+                                        'path' => null,
+                                        'variant' => 'preview',
+                                    ])
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="borrowing-photo-panel borrowing-photo-panel--return h-100">
+                            <div class="borrowing-photo-panel__header">
+                                <i class="bi bi-box-arrow-in-left"></i>
+                                Foto Saat Pengembalian
+                            </div>
+                            <div class="borrowing-photo-panel__body">
+                                <p class="borrowing-photo-panel__hint">
+                                    Unggah foto kondisi barang saat ini untuk dibandingkan dengan foto pengajuan.
+                                </p>
+                                @include('partials.borrowing-image-upload', [
+                                    'inputId' => 'return_image',
+                                    'inputName' => 'return_image',
+                                    'label' => 'Seret atau pilih foto pengembalian',
+                                    'hint' => 'Pastikan kondisi barang terlihat jelas · maks. 5 MB',
+                                    'errorKey' => 'return_image',
+                                ])
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="mb-3">
 
@@ -73,28 +119,6 @@
 
             </div>
 
-            <div class="mb-3">
-
-                <label class="form-label">
-                    Foto Kondisi Barang (Saat Pengembalian)
-                </label>
-
-                <input type="file"
-                    name="return_image"
-                    id="return_image"
-                    class="form-control @error('return_image') is-invalid @enderror"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                    required>
-
-                <div class="form-text">Unggah foto kondisi barang saat ini untuk perbandingan. Maksimal 5 MB.</div>
-
-                <div id="return_image_preview" class="mt-3 d-none">
-                    <p class="small text-muted mb-1">Pratinjau:</p>
-                    <img alt="Pratinjau foto pengembalian" class="rounded border" style="max-width: 280px; max-height: 200px; object-fit: cover;">
-                </div>
-
-            </div>
-
             <div class="mb-4">
 
                 <label class="form-label">
@@ -108,7 +132,7 @@
 
             </div>
 
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap">
                 <button class="btn btn-primary">
                     <i class="bi bi-check-lg"></i> Simpan Pengembalian
                 </button>
@@ -120,38 +144,5 @@
     </div>
 
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const returnImageInput = document.getElementById('return_image');
-    const preview = document.getElementById('return_image_preview');
-
-    if (!returnImageInput || !preview) {
-        return;
-    }
-
-    const previewImg = preview.querySelector('img');
-    let previewObjectUrl = null;
-
-    returnImageInput.addEventListener('change', function (e) {
-        const file = e.target.files[0];
-
-        if (previewObjectUrl) {
-            URL.revokeObjectURL(previewObjectUrl);
-            previewObjectUrl = null;
-        }
-
-        if (!file) {
-            preview.classList.add('d-none');
-            previewImg.removeAttribute('src');
-            return;
-        }
-
-        previewObjectUrl = URL.createObjectURL(file);
-        previewImg.src = previewObjectUrl;
-        preview.classList.remove('d-none');
-    });
-});
-</script>
 
 @endsection

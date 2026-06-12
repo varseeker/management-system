@@ -8,12 +8,11 @@
 
     <div class="card-body">
 
-        <div class="alert alert-info">
-            <strong>Ketentuan peminjaman:</strong>
+        <x-callout type="info" title="Ketentuan peminjaman" class="mb-4">
             Maksimal <strong>{{ $maxQuantity }} unit</strong> per pengajuan
             dan jangka waktu maksimal <strong>{{ $maxLoanDays }} hari</strong>.
             Unggah foto kondisi barang agar persetujuan lebih jelas.
-        </div>
+        </x-callout>
 
         <form action="{{ route('borrowings.store') }}"
             method="POST"
@@ -115,25 +114,19 @@
             </div>
 
             <div class="mb-4">
-
-                <label class="form-label">
-                    Foto Kondisi Barang (Saat Pengajuan)
-                </label>
-
-                <input type="file"
-                    name="borrow_image"
-                    id="borrow_image"
-                    class="form-control @error('borrow_image') is-invalid @enderror"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                    required>
-
-                <div class="form-text">Format JPG, PNG, atau WEBP. Maksimal 5 MB.</div>
-
-                <div id="borrow_image_preview" class="mt-3 d-none">
-                    <p class="small text-muted mb-1">Pratinjau:</p>
-                    <img alt="Pratinjau foto pengajuan" class="rounded border" style="max-width: 280px; max-height: 200px; object-fit: cover;">
-                </div>
-
+                <h6 class="fw-semibold mb-2">
+                    <i class="bi bi-camera text-primary"></i> Foto Kondisi Barang (Saat Pengajuan)
+                </h6>
+                <p class="text-muted small mb-3">
+                    Dokumentasikan kondisi barang sebelum dipinjam. Foto ini akan digunakan saat proses pengembalian.
+                </p>
+                @include('partials.borrowing-image-upload', [
+                    'inputId' => 'borrow_image',
+                    'inputName' => 'borrow_image',
+                    'label' => 'Seret atau pilih foto pengajuan',
+                    'hint' => 'JPG, PNG, atau WEBP · maks. 5 MB',
+                    'errorKey' => 'borrow_image',
+                ])
             </div>
 
             <div class="d-flex gap-2">
@@ -211,33 +204,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const borrowImageInput = document.getElementById('borrow_image');
-    const preview = document.getElementById('borrow_image_preview');
-
-    if (borrowImageInput && preview) {
-        const previewImg = preview.querySelector('img');
-        let previewObjectUrl = null;
-
-        borrowImageInput.addEventListener('change', function (e) {
-            const file = e.target.files[0];
-
-            if (previewObjectUrl) {
-                URL.revokeObjectURL(previewObjectUrl);
-                previewObjectUrl = null;
-            }
-
-            if (!file) {
-                preview.classList.add('d-none');
-                previewImg.removeAttribute('src');
-                return;
-            }
-
-            previewObjectUrl = URL.createObjectURL(file);
-            previewImg.src = previewObjectUrl;
-            preview.classList.remove('d-none');
-        });
-    }
-
     const form = document.getElementById('borrowing-form');
     const openBtn = document.getElementById('btn-open-confirm-modal');
     const confirmBtn = document.getElementById('btn-confirm-submit');

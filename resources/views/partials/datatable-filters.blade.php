@@ -5,7 +5,7 @@
 
 @if(count($filters))
 <div class="row g-2 mb-3 align-items-end">
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
         <label class="form-label small mb-1">Cari</label>
         <input type="search"
             class="form-control form-control-sm js-dt-text-search"
@@ -14,7 +14,7 @@
     </div>
 
     @foreach($filters as $filter)
-    <div class="col-md-{{ $filter['cols'] ?? 2 }}">
+    <div class="col-12 col-sm-6 col-md-{{ $filter['cols'] ?? 2 }}">
         <label class="form-label small mb-1">{{ $filter['label'] }}</label>
         <select
             class="form-select form-select-sm js-dt-column-filter"
@@ -28,7 +28,7 @@
     </div>
     @endforeach
 
-    <div class="col-md-{{ count($filters) >= 3 ? 12 : 4 }}">
+    <div class="col-12 col-md-{{ count($filters) >= 3 ? 12 : 4 }}">
         <span class="small text-muted js-filter-info" data-table="{{ $tableId }}"></span>
     </div>
 </div>

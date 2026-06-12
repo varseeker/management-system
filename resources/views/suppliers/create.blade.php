@@ -28,9 +28,14 @@
             <hr>
             <h6 class="fw-bold mb-3">Barang yang Ditawarkan</h6>
             @if($rawMaterials->isEmpty())
-            <div class="alert alert-warning">
-                Tambah <a href="{{ route('raw-materials.create') }}">bahan baku</a> terlebih dahulu.
-            </div>
+            @push('flash-toasts')
+            <script type="application/json" class="js-extra-flash">
+            [{"type":"warning","title":"Perhatian","message":"Tambah bahan baku terlebih dahulu sebelum menambah pemasok."}]
+            </script>
+            @endpush
+            <x-callout type="warning" title="Bahan baku belum tersedia" class="mb-3">
+                Tambah <a href="{{ route('raw-materials.create') }}">bahan baku</a> terlebih dahulu untuk mencatat penawaran pemasok.
+            </x-callout>
             @else
             <div class="row g-2 mb-2 fw-semibold small text-muted">
                 <div class="col-md-5">Bahan Baku</div>

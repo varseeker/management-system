@@ -6,7 +6,7 @@
 
     @foreach($rows as $index => $row)
     <div class="row g-2 mb-2 offer-row">
-        <div class="col-md-5">
+        <div class="col-12 col-md-5">
             <select name="offers[{{ $index }}][raw_material_id]" class="form-select" required>
                 <option value="">Pilih bahan baku</option>
                 @foreach($rawMaterials as $material)
@@ -17,11 +17,11 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <input type="number" name="offers[{{ $index }}][price]" class="form-control"
                 min="0" step="0.01" placeholder="Harga" value="{{ $row['price'] ?? '' }}" required>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <select name="offers[{{ $index }}][quality]" class="form-select" required>
                 @foreach($qualities as $value => $label)
                 <option value="{{ $value }}" @selected(($row['quality'] ?? 'good') == $value)>
@@ -30,9 +30,9 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-1">
+        <div class="col-12 col-md-1">
             <button type="button" class="btn btn-outline-danger w-100 remove-offer">
-                <i class="bi bi-trash"></i>
+                <i class="bi bi-trash"></i> Hapus
             </button>
         </div>
     </div>
@@ -45,7 +45,7 @@
 
 <template id="offer-template">
     <div class="row g-2 mb-2 offer-row">
-        <div class="col-md-5">
+        <div class="col-12 col-md-5">
             <select name="offers[__INDEX__][raw_material_id]" class="form-select" required>
                 <option value="">Pilih bahan baku</option>
                 @foreach($rawMaterials as $material)
@@ -53,20 +53,20 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <input type="number" name="offers[__INDEX__][price]" class="form-control"
                 min="0" step="0.01" placeholder="Harga" required>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <select name="offers[__INDEX__][quality]" class="form-select" required>
                 @foreach($qualities as $value => $label)
                 <option value="{{ $value }}">{{ $label }}</option>
                 @endforeach
             </select>
         </div>
-        <div class="col-md-1">
+        <div class="col-12 col-md-1">
             <button type="button" class="btn btn-outline-danger w-100 remove-offer">
-                <i class="bi bi-trash"></i>
+                <i class="bi bi-trash"></i> Hapus
             </button>
         </div>
     </div>

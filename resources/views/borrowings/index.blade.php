@@ -249,7 +249,7 @@
 
                         <th class="js-sort-col">Deskripsi</th>
 
-                        <th>Foto</th>
+                        <th class="text-nowrap">Dokumentasi Foto</th>
 
                         <th class="js-sort-col">Status</th>
 
@@ -281,8 +281,11 @@
 
                         <td data-sort="{{ $borrowing->description ?? $borrowing->note ?? '' }}">{{ $borrowing->description ?? $borrowing->note ?? '-' }}</td>
 
-                        <td>
-                            @include('partials.borrowing-images-compare', ['borrowing' => $borrowing])
+                        <td class="borrowing-photos-cell">
+                            @include('partials.borrowing-images-compare', [
+                                'borrowing' => $borrowing,
+                                'layout' => 'inline',
+                            ])
                         </td>
 
                         <td data-filter="{{ $statusLabel = match($borrowing->status) {

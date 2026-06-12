@@ -48,7 +48,7 @@
 
                         @csrf
 
-                        <div class="col-4">
+                        <div class="col-12 col-sm-4">
 
                             <label class="form-label small">Porsi</label>
 
@@ -56,7 +56,7 @@
 
                         </div>
 
-                        <div class="col-5">
+                        <div class="col-12 col-sm-5">
 
                             <label class="form-label small">Catatan</label>
 
@@ -64,7 +64,7 @@
 
                         </div>
 
-                        <div class="col-3">
+                        <div class="col-12 col-sm-3">
 
                             <button class="btn btn-success w-100">Proses</button>
 

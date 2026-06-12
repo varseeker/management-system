@@ -56,7 +56,9 @@ Route::middleware('auth')->group(function () {
 
         abort_unless($absolute && is_file($absolute), 404);
 
-        return response()->file($absolute);
+        return response()->file($absolute, [
+            'Cache-Control' => 'public, max-age=31536000, immutable',
+        ]);
     })->where('path', '.*')->name('borrowings.image');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

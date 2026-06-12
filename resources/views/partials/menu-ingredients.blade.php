@@ -5,7 +5,7 @@
 
     @foreach($rows as $index => $row)
     <div class="row g-2 mb-2 ingredient-row">
-        <div class="col-md-7">
+        <div class="col-12 col-md-7">
             <select name="ingredients[{{ $index }}][raw_material_id]" class="form-select" required>
                 <option value="">Pilih bahan baku</option>
                 @foreach($rawMaterials as $material)
@@ -16,11 +16,11 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-8 col-md-3">
             <input type="number" name="ingredients[{{ $index }}][quantity]"
-                class="form-control" min="1" value="{{ $row['quantity'] ?? 1 }}" required>
+                class="form-control" min="1" value="{{ $row['quantity'] ?? 1 }}" placeholder="Jumlah" required>
         </div>
-        <div class="col-md-2">
+        <div class="col-4 col-md-2">
             <button type="button" class="btn btn-outline-danger w-100 remove-ingredient">
                 <i class="bi bi-trash"></i>
             </button>
@@ -35,7 +35,7 @@
 
 <template id="ingredient-template">
     <div class="row g-2 mb-2 ingredient-row">
-        <div class="col-md-7">
+        <div class="col-12 col-md-7">
             <select name="ingredients[__INDEX__][raw_material_id]" class="form-select" required>
                 <option value="">Pilih bahan baku</option>
                 @foreach($rawMaterials as $material)
@@ -45,11 +45,11 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-8 col-md-3">
             <input type="number" name="ingredients[__INDEX__][quantity]"
-                class="form-control" min="1" value="1" required>
+                class="form-control" min="1" value="1" placeholder="Jumlah" required>
         </div>
-        <div class="col-md-2">
+        <div class="col-4 col-md-2">
             <button type="button" class="btn btn-outline-danger w-100 remove-ingredient">
                 <i class="bi bi-trash"></i>
             </button>

@@ -1,29 +1,4 @@
 <x-guest-layout>
-    @if (session('status'))
-
-    <div class="alert alert-success">
-        {{ session('status') }}
-    </div>
-
-    @endif
-
-    @if ($errors->any())
-
-    <div class="alert alert-danger">
-
-        <ul class="mb-0">
-
-            @foreach ($errors->all() as $error)
-
-            <li>{{ $error }}</li>
-
-            @endforeach
-
-        </ul>
-
-    </div>
-
-    @endif
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
@@ -35,8 +10,12 @@
             <input type="email"
                 name="email"
                 value="{{ old('email') }}"
-                class="form-control"
+                class="form-control @error('email') is-invalid @enderror"
                 required>
+
+            @error('email')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="mb-3">
@@ -46,8 +25,12 @@
 
             <input type="password"
                 name="password"
-                class="form-control"
+                class="form-control @error('password') is-invalid @enderror"
                 required>
+
+            @error('password')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="mb-4">

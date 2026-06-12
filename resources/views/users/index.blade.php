@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('styles')
+    @vite('resources/css/datatables.css')
+@endpush
+
 @section('title', 'Manajemen Pengguna')
 
 @section('content')

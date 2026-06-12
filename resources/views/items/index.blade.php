@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('styles')
+    @vite('resources/css/datatables.css')
+@endpush
+
 @section('title', 'Daftar Barang')
 
 @section('content')
@@ -8,7 +12,7 @@
 
     <div class="card-body">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
 
             <div>
                 <h5 class="mb-1 fw-bold">

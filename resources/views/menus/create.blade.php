@@ -24,9 +24,14 @@
             <hr>
             <h6 class="fw-bold mb-3">Resep Bahan Baku (per 1 porsi)</h6>
             @if($rawMaterials->isEmpty())
-            <div class="alert alert-warning">
-                Tambah <a href="{{ route('raw-materials.create') }}">bahan baku</a> terlebih dahulu.
-            </div>
+            @push('flash-toasts')
+            <script type="application/json" class="js-extra-flash">
+            [{"type":"warning","title":"Perhatian","message":"Tambah bahan baku terlebih dahulu sebelum membuat menu."}]
+            </script>
+            @endpush
+            <x-callout type="warning" title="Bahan baku belum tersedia" class="mb-3">
+                Tambah <a href="{{ route('raw-materials.create') }}">bahan baku</a> terlebih dahulu untuk menyusun resep menu.
+            </x-callout>
             @else
             @include('partials.menu-ingredients', ['rawMaterials' => $rawMaterials])
             @endif

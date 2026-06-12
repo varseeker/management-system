@@ -32,7 +32,7 @@
     <div class="card-body">
         <h6 class="fw-bold mb-3">Daftar Barang & Penawaran</h6>
         <div class="table-responsive">
-            <table class="table align-middle">
+            <table id="supplierOffersTable" class="table align-middle js-paginated-table">
                 <thead class="table-light">
                     <tr>
                         <th>Bahan Baku</th>
