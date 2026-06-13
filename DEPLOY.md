@@ -12,19 +12,25 @@ Panduan deploy **Sistem Manajemen Warkop Kayu** ke [Render.com](https://render.c
 | Maintenance | Dashboard web, tanpa SSH wajib |
 | Region | Singapore (dekat Indonesia) |
 
-### Foto peminjaman tidak muncul / error 404
+**Catatan tier gratis:**
+- Web service **tidur** setelah ~15 menit tidak ada traffic → cold start ~30–60 detik saat pertama dibuka.
+- **Shell tidak tersedia** di tier gratis — migrasi & seed jalan otomatis saat deploy (lihat bawah).
+- Foto peminjaman disimpan di **PostgreSQL** (persisten), bukan hanya di disk container.
 
-Penyebab umum:
+---
 
-| Penyebab | Perbaikan |
-|----------|-----------|
-| Path foto lama `uploads/...` | Migrasi otomatis saat deploy; redeploy setelah push kode terbaru |
-| File seed hilang setelah redeploy | Set `RUN_SEED=true` → redeploy → hapus variabel |
-| Upload baru tidak tampil | Pastikan `storage:link` jalan (otomatis di `start.sh`) |
+### Foto peminjaman tidak muncul / hilang setelah login ulang
 
-Foto dilayani via `/borrowings/images/...` (Laravel), bukan file statis langsung.
+**Penyebab:** Disk container Render bersifat sementara — file di `storage/` hilang saat restart/redeploy, sementara path di database tetap ada.
 
-> **Tier gratis:** disk container **sementara** — foto hilang saat redeploy/restart. Data database tetap aman. Untuk foto permanen, pertimbangkan Fly.io (disk persisten) atau S3.
+**Perbaikan (otomatis setelah deploy kode terbaru):**
+- Setiap upload foto disalin ke **PostgreSQL** (tabel `borrowing_image_files`)
+- Gambar dilayani dari database jika file disk tidak ada
+- Saat deploy, `borrowings:backfill-images-db` mengisi ulang dari file yang masih ada
+
+**Setelah push kode terbaru:** redeploy sekali. Foto **baru** langsung aman. Foto **lama** yang sudah hilang dari disk tidak bisa dipulihkan — unggah ulang atau jalankan `RUN_SEED=true` untuk data demo.
+
+> Data peminjaman (teks, status, path) tetap di PostgreSQL. Hanya **isi file gambar** yang sebelumnya hilang jika belum sempat tersimpan ke database.
 
 ---
 

@@ -15,6 +15,7 @@ class DatabaseMaintenance
     {
         return [
             'menu_sales',
+            'borrowing_image_files',
             'borrowings',
             'menu_raw_material',
             'supplier_raw_material',

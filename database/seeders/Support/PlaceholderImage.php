@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\Support;
 
+use App\Support\BorrowingImageStorage;
 use Illuminate\Support\Facades\File;
 
 class PlaceholderImage
@@ -30,6 +31,8 @@ class PlaceholderImage
                 base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
             );
         }
+
+        BorrowingImageStorage::persistPath($relativePath);
 
         return $relativePath;
     }

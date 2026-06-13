@@ -2,8 +2,10 @@
 
 namespace App\Support;
 
+use App\Models\BorrowingImageFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -31,23 +33,28 @@ class BorrowingImageStorage
         $filename = Str::random(40) . '.jpg';
         $relativePath = "{$baseDir}/{$filename}";
         $absolutePath = $disk->path($relativePath);
-        $thumbAbsolutePath = $disk->path("{$thumbDir}/{$filename}");
+        $thumbRelativePath = "{$thumbDir}/{$filename}";
+        $thumbAbsolutePath = $disk->path($thumbRelativePath);
 
         if (self::saveOptimizedJpeg($file->getRealPath(), $absolutePath, self::MAX_WIDTH, self::JPEG_QUALITY)) {
             self::saveOptimizedJpeg($file->getRealPath(), $thumbAbsolutePath, self::THUMB_WIDTH, self::THUMB_QUALITY);
+            self::persistPath($relativePath);
+            self::persistPath($thumbRelativePath);
 
             return $relativePath;
         }
 
         $fallbackName = $file->hashName();
+        $relativePath = "{$baseDir}/{$fallbackName}";
         $disk->putFileAs($baseDir, $file, $fallbackName);
+        self::persistPath($relativePath);
 
-        return "{$baseDir}/{$fallbackName}";
+        return $relativePath;
     }
 
     public static function url(?string $path): ?string
     {
-        if (! $path || ! self::absolutePath($path)) {
+        if (! $path || ! self::exists($path)) {
             return null;
         }
 
@@ -62,19 +69,74 @@ class BorrowingImageStorage
 
         $normalized = self::normalizePath($path);
 
-        if (preg_match('#^borrowings/([^/]+)/#', $normalized, $matches)) {
+        if (preg_match('#^borrowings/([^/]+)/#', $normalized)) {
             $thumbRelative = preg_replace(
                 '#^borrowings/([^/]+)/#',
                 'borrowings/$1/thumbs/',
                 $normalized,
             );
 
-            if ($thumbRelative !== $normalized && self::absolutePath($thumbRelative)) {
+            if ($thumbRelative !== $normalized && self::exists($thumbRelative)) {
                 return self::serveUrl($thumbRelative);
             }
         }
 
         return self::url($path);
+    }
+
+    public static function exists(?string $path): bool
+    {
+        if (! $path) {
+            return false;
+        }
+
+        $normalized = self::normalizePath($path);
+
+        if (self::absolutePathOnDisk($normalized) !== null) {
+            return true;
+        }
+
+        return self::hasDatabaseRecord($normalized);
+    }
+
+    public static function contents(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        $normalized = self::normalizePath($path);
+        $diskPath = self::absolutePathOnDisk($normalized);
+
+        if ($diskPath !== null) {
+            return file_get_contents($diskPath) ?: null;
+        }
+
+        if (! self::hasDatabaseRecord($normalized)) {
+            return null;
+        }
+
+        return BorrowingImageFile::query()
+            ->where('path', $normalized)
+            ->value('contents');
+    }
+
+    public static function mimeType(?string $path): string
+    {
+        if (! $path) {
+            return 'application/octet-stream';
+        }
+
+        $normalized = self::normalizePath($path);
+        $diskPath = self::absolutePathOnDisk($normalized);
+
+        if ($diskPath !== null) {
+            return mime_content_type($diskPath) ?: 'image/jpeg';
+        }
+
+        return BorrowingImageFile::query()
+            ->where('path', $normalized)
+            ->value('mime_type') ?? 'image/jpeg';
     }
 
     public static function absolutePath(?string $path): ?string
@@ -84,24 +146,47 @@ class BorrowingImageStorage
         }
 
         $normalized = self::normalizePath($path);
+        $diskPath = self::absolutePathOnDisk($normalized);
 
-        $storageFile = storage_path('app/public/' . $normalized);
-
-        if (is_file($storageFile)) {
-            return $storageFile;
+        if ($diskPath !== null) {
+            return $diskPath;
         }
 
-        $legacyFile = public_path('uploads/' . $normalized);
-
-        if (is_file($legacyFile)) {
-            return $legacyFile;
-        }
-
-        if (is_file(public_path($path))) {
-            return public_path($path);
+        if (self::hasDatabaseRecord($normalized)) {
+            return null;
         }
 
         return null;
+    }
+
+    public static function persistPath(string $path): bool
+    {
+        if (! Schema::hasTable('borrowing_image_files')) {
+            return false;
+        }
+
+        $normalized = self::normalizePath($path);
+        $diskPath = self::absolutePathOnDisk($normalized);
+
+        if ($diskPath === null) {
+            return false;
+        }
+
+        $contents = file_get_contents($diskPath);
+
+        if ($contents === false || $contents === '') {
+            return false;
+        }
+
+        BorrowingImageFile::updateOrCreate(
+            ['path' => $normalized],
+            [
+                'mime_type' => mime_content_type($diskPath) ?: 'image/jpeg',
+                'contents' => $contents,
+            ],
+        );
+
+        return true;
     }
 
     public static function delete(?string $path): void
@@ -111,10 +196,10 @@ class BorrowingImageStorage
         }
 
         $normalized = self::normalizePath($path);
-        $absolute = self::absolutePath($path);
+        $diskPath = self::absolutePathOnDisk($normalized);
 
-        if ($absolute && is_file($absolute)) {
-            File::delete($absolute);
+        if ($diskPath !== null && is_file($diskPath)) {
+            File::delete($diskPath);
         }
 
         if (preg_match('#^borrowings/([^/]+)/#', $normalized)) {
@@ -125,15 +210,18 @@ class BorrowingImageStorage
             );
 
             if ($thumbRelative !== $normalized) {
-                $thumbAbsolute = self::absolutePath($thumbRelative);
+                $thumbDiskPath = self::absolutePathOnDisk($thumbRelative);
 
-                if ($thumbAbsolute && is_file($thumbAbsolute)) {
-                    File::delete($thumbAbsolute);
+                if ($thumbDiskPath !== null && is_file($thumbDiskPath)) {
+                    File::delete($thumbDiskPath);
                 }
+
+                self::deleteDatabaseRecord($thumbRelative);
             }
         }
 
         Storage::disk(self::DISK)->delete($normalized);
+        self::deleteDatabaseRecord($normalized);
     }
 
     public static function normalizePath(string $path): string
@@ -150,6 +238,49 @@ class BorrowingImageStorage
     private static function serveUrl(string $path): string
     {
         return '/borrowings/images/' . self::normalizePath($path);
+    }
+
+    private static function absolutePathOnDisk(string $normalized): ?string
+    {
+        $storageFile = storage_path('app/public/' . $normalized);
+
+        if (is_file($storageFile)) {
+            return $storageFile;
+        }
+
+        $legacyFile = public_path('uploads/' . $normalized);
+
+        if (is_file($legacyFile)) {
+            return $legacyFile;
+        }
+
+        if (is_file(public_path($normalized))) {
+            return public_path($normalized);
+        }
+
+        return null;
+    }
+
+    private static function hasDatabaseRecord(string $normalized): bool
+    {
+        if (! Schema::hasTable('borrowing_image_files')) {
+            return false;
+        }
+
+        return BorrowingImageFile::query()
+            ->where('path', $normalized)
+            ->exists();
+    }
+
+    private static function deleteDatabaseRecord(string $normalized): void
+    {
+        if (! Schema::hasTable('borrowing_image_files')) {
+            return;
+        }
+
+        BorrowingImageFile::query()
+            ->where('path', $normalized)
+            ->delete();
     }
 
     private static function saveOptimizedJpeg(
