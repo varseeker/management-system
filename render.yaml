@@ -3,7 +3,7 @@
 
 databases:
   - name: warkop-db
-    databaseName: warkop
+    databaseName: warkop_db
     user: warkop
     plan: free
 
