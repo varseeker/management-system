@@ -1,5 +1,5 @@
-# Render Blueprint — deploy otomatis web + database PostgreSQL (gratis)
-# Docs: https://render.com/docs/blueprint-spec
+# Render Blueprint — Sistem Manajemen Warkop Kayu (Inventory)
+# Setelah deploy, set POS_SERVICE_URL ke URL service POS di Render.
 
 databases:
   - name: warkop-db
@@ -35,13 +35,11 @@ services:
         - render.yaml
     envVars:
       - key: APP_NAME
-        value: Warkop Kayu
+        value: Warkop Kayu Management
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: "false"
-      # JANGAN pakai generateValue — Laravel butuh format base64:...
-      # Generate lokal: php artisan key:generate --show
       - key: APP_KEY
         sync: false
       - key: APP_URL
@@ -54,7 +52,6 @@ services:
         value: warning
       - key: DB_CONNECTION
         value: pgsql
-      # Render auto-link biasanya pakai DATABASE_URL; Laravel baca keduanya.
       - key: DATABASE_URL
         fromDatabase:
           name: warkop-db
@@ -75,3 +72,9 @@ services:
         value: database
       - key: FILESYSTEM_DISK
         value: local
+      - key: INVENTORY_API_TOKEN
+        sync: false
+      - key: INVENTORY_POS_USER_EMAIL
+        value: pos-integration@system.local
+      - key: POS_SERVICE_URL
+        sync: false

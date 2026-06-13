@@ -6,7 +6,7 @@
 
 <div class="card dashboard-card">
     <div class="card-body">
-        <form action="{{ route('menus.store') }}" method="POST">
+        <form action="{{ route('menus.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="mb-3">
                 <label class="form-label">Kode Menu</label>
@@ -21,7 +21,9 @@
                 <textarea name="description" class="form-control">{{ old('description') }}</textarea>
             </div>
 
-            <hr>
+            @include('partials.menu-pos-fields')
+
+            <hr class="my-4">
             <h6 class="fw-bold mb-3">Resep Bahan Baku (per 1 porsi)</h6>
             @if($rawMaterials->isEmpty())
             @push('flash-toasts')

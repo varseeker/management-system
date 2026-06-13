@@ -18,6 +18,7 @@ use App\Http\Controllers\UserController;
 
 use App\Http\Controllers\RawMaterialController;
 
+use App\Http\Controllers\MenuImageController;
 use App\Http\Controllers\MenuController;
 
 use App\Http\Controllers\SupplierController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\BorrowingApprovalActionController;
 
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\BorrowingImageController;
+use App\Http\Controllers\PosReportController;
 
 Route::get('/', function () {
 
@@ -52,6 +54,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/borrowings/images/{path}', [BorrowingImageController::class, 'show'])
         ->where('path', '.*')
         ->name('borrowings.image');
+
+    Route::get('/menus/images/{path}', [MenuImageController::class, 'show'])
+        ->where('path', '.*')
+        ->name('menus.image');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 
@@ -140,6 +146,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/export/menu-sales', [ExportController::class, 'menuSales'])
 
             ->name('export.menu-sales');
+
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/orders/export', [PosReportController::class, 'exportOrders'])->name('orders.export');
+            Route::get('/orders', [PosReportController::class, 'indexOrders'])->name('orders.index');
+            Route::get('/orders/{order}', [PosReportController::class, 'showOrder'])->name('orders.show');
+
+            Route::get('/payments/export', [PosReportController::class, 'exportPayments'])->name('payments.export');
+            Route::get('/payments', [PosReportController::class, 'indexPayments'])->name('payments.index');
+            Route::get('/payments/{payment}', [PosReportController::class, 'showPayment'])->name('payments.show');
+        });
 
     });
 

@@ -70,6 +70,7 @@ php artisan view:cache
 php artisan storage:link 2>/dev/null || true
 
 mkdir -p \
+    storage/app/public/menus \
     storage/app/public/borrowings/pengajuan/thumbs \
     storage/app/public/borrowings/pengembalian/thumbs \
     storage/app/public/borrowings/seed \

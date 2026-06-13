@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Menu;
 use App\Models\MenuSale;
 use App\Models\RawMaterial;
+use App\Support\MenuImageStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -31,22 +32,36 @@ class MenuController extends Controller
             'code' => 'required|unique:menus',
             'name' => 'required',
             'description' => 'nullable',
+            'price' => 'required|integer|min:0',
+            'category' => 'required|in:Snack,Non-coffee,Coffee',
+            'most_ordered' => 'nullable|boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'ingredients' => 'required|array|min:1',
             'ingredients.*.raw_material_id' => 'required|exists:raw_materials,id',
             'ingredients.*.quantity' => 'required|integer|min:1',
         ]);
 
+        $imagePath = null;
+
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            $imagePath = MenuImageStorage::store($request->file('image'), $validated['code']);
+        }
+
         $menu = Menu::create([
             'code' => $validated['code'],
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
+            'price' => $validated['price'],
+            'category' => $validated['category'],
+            'most_ordered' => $request->boolean('most_ordered'),
+            'image_path' => $imagePath,
         ]);
 
         $this->syncIngredients($menu, $validated['ingredients']);
 
         return redirect()
             ->route('menus.index')
-            ->with('success', 'Menu berhasil ditambahkan');
+            ->with('success', 'Menu berhasil ditambahkan. POS akan sync otomatis.');
     }
 
     public function edit(Menu $menu)
@@ -63,28 +78,44 @@ class MenuController extends Controller
             'code' => 'required|unique:menus,code,' . $menu->id,
             'name' => 'required',
             'description' => 'nullable',
+            'price' => 'required|integer|min:0',
+            'category' => 'required|in:Snack,Non-coffee,Coffee',
             'is_active' => 'nullable|boolean',
+            'most_ordered' => 'nullable|boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'ingredients' => 'required|array|min:1',
             'ingredients.*.raw_material_id' => 'required|exists:raw_materials,id',
             'ingredients.*.quantity' => 'required|integer|min:1',
         ]);
 
+        $imagePath = $menu->image_path;
+
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            MenuImageStorage::delete($menu->image_path);
+            $imagePath = MenuImageStorage::store($request->file('image'), $validated['code']);
+        }
+
         $menu->update([
             'code' => $validated['code'],
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
+            'price' => $validated['price'],
+            'category' => $validated['category'],
+            'most_ordered' => $request->boolean('most_ordered'),
             'is_active' => $request->boolean('is_active'),
+            'image_path' => $imagePath,
         ]);
 
         $this->syncIngredients($menu, $validated['ingredients']);
 
         return redirect()
             ->route('menus.index')
-            ->with('success', 'Menu berhasil diperbarui');
+            ->with('success', 'Menu diperbarui. POS akan sync otomatis.');
     }
 
     public function destroy(Menu $menu)
     {
+        MenuImageStorage::delete($menu->image_path);
         $menu->delete();
 
         return redirect()

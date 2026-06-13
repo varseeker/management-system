@@ -13,6 +13,10 @@ class Menu extends Model
         'code',
         'name',
         'description',
+        'price',
+        'category',
+        'image_path',
+        'most_ordered',
         'is_active',
     ];
 
@@ -20,7 +24,14 @@ class Menu extends Model
     {
         return [
             'is_active' => 'boolean',
+            'most_ordered' => 'boolean',
+            'price' => 'integer',
         ];
+    }
+
+    public function imageUrl(): ?string
+    {
+        return \App\Support\MenuImageStorage::publicUrl($this->image_path);
     }
 
     public function rawMaterials(): BelongsToMany
@@ -59,5 +70,26 @@ class Menu extends Model
         foreach ($this->stockRequirements($servings) as $row) {
             $row['material']->decrement('stock', $row['required']);
         }
+    }
+
+    public function maxServings(): int
+    {
+        if ($this->rawMaterials->isEmpty()) {
+            return 0;
+        }
+
+        $max = PHP_INT_MAX;
+
+        foreach ($this->stockRequirements(1) as $row) {
+            $required = (int) $row['required'];
+
+            if ($required <= 0) {
+                continue;
+            }
+
+            $max = min($max, intdiv((int) $row['material']->stock, $required));
+        }
+
+        return $max === PHP_INT_MAX ? 0 : $max;
     }
 }

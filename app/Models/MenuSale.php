@@ -12,6 +12,10 @@ class MenuSale extends Model
         'user_id',
         'quantity',
         'note',
+        'external_order_id',
+        'source',
+        'payment_method',
+        'customer',
     ];
 
     public function menu(): BelongsTo

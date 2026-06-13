@@ -64,6 +64,27 @@
                     <i class="bi bi-cup-hot"></i>
                     Menu
                 </a>
+
+                @if(config('inventory.pos_url'))
+                <a href="{{ config('inventory.pos_url') }}" target="_blank" rel="noopener">
+                    <i class="bi bi-display"></i>
+                    Kasir (POS)
+                </a>
+                @endif
+
+                <a href="{{ route('reports.orders.index') }}"
+                    class="{{ request()->is('reports/orders*') ? 'active' : '' }}">
+
+                    <i class="bi bi-receipt"></i>
+                    Laporan Pesanan
+                </a>
+
+                <a href="{{ route('reports.payments.index') }}"
+                    class="{{ request()->is('reports/payments*') ? 'active' : '' }}">
+
+                    <i class="bi bi-credit-card"></i>
+                    Laporan Pembayaran
+                </a>
                 @endif
 
                 @if(in_array(auth()->user()->role, ['admin', 'owner', 'staff']))
@@ -71,7 +92,7 @@
                     class="{{ request()->is('menus/sell') ? 'active' : '' }}">
 
                     <i class="bi bi-cart-check"></i>
-                    Pesanan
+                    Penjualan Langsung
                 </a>
 
                 <a href="{{ route('borrowings.index') }}"
@@ -180,6 +201,7 @@
     @include('partials.flash-messages')
     @include('partials.borrowing-photo-modal')
 
+    @stack('scripts')
 </body>
 
 </html>

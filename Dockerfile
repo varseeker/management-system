@@ -70,6 +70,7 @@ WORKDIR /var/www/html
 RUN mkdir -p \
         storage/framework/{cache,sessions,views} \
         storage/logs \
+        storage/app/public/menus \
         storage/app/public/borrowings/pengajuan/thumbs \
         storage/app/public/borrowings/pengembalian/thumbs \
         storage/app/public/borrowings/seed \

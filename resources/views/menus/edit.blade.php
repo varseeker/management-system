@@ -6,7 +6,7 @@
 
 <div class="card dashboard-card">
     <div class="card-body">
-        <form action="{{ route('menus.update', $menu) }}" method="POST">
+        <form action="{{ route('menus.update', $menu) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <div class="mb-3">
@@ -27,7 +27,9 @@
                 <label class="form-check-label" for="is_active">Menu aktif</label>
             </div>
 
-            <hr>
+            @include('partials.menu-pos-fields', ['menu' => $menu])
+
+            <hr class="my-4">
             <h6 class="fw-bold mb-3">Resep Bahan Baku (per 1 porsi)</h6>
             @php
                 $ingredients = old('ingredients', $menu->rawMaterials->map(fn ($m) => [

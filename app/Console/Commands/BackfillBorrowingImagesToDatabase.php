@@ -48,14 +48,31 @@ class BackfillBorrowingImagesToDatabase extends Command
             });
 
         $stored = 0;
+        $skipped = 0;
+        $failed = 0;
 
         foreach ($paths->unique()->filter() as $path) {
-            if (BorrowingImageStorage::persistPath($path)) {
-                $stored++;
+            try {
+                if (BorrowingImageStorage::persistPath($path)) {
+                    $stored++;
+                } else {
+                    $skipped++;
+                }
+            } catch (\Throwable $exception) {
+                $failed++;
+                $this->warn("Gagal menyimpan {$path}: {$exception->getMessage()}");
             }
         }
 
         $this->info("Foto disimpan ke database: {$stored}");
+
+        if ($skipped > 0) {
+            $this->line("Dilewati (file tidak ditemukan): {$skipped}");
+        }
+
+        if ($failed > 0) {
+            $this->error("Gagal: {$failed}");
+        }
 
         return self::SUCCESS;
     }

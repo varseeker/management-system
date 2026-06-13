@@ -31,6 +31,11 @@ class UserSeeder extends Seeder
                 'email' => 'ketoy@warkopkayu.test',
                 'role' => 'staff',
             ],
+            [
+                'name' => 'POS Warkop Kayu',
+                'email' => 'pos-integration@system.local',
+                'role' => 'staff',
+            ],
         ];
 
         foreach ($users as $user) {
