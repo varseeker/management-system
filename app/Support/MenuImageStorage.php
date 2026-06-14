@@ -37,15 +37,29 @@ class MenuImageStorage
 
     public static function publicUrl(?string $path): ?string
     {
+        $apiPath = self::apiPath($path);
+
+        if (! $apiPath) {
+            return null;
+        }
+
+        return url($apiPath);
+    }
+
+    /**
+     * Path relatif untuk API POS — di-resolve dengan INVENTORY_SERVICE_URL di sisi POS.
+     */
+    public static function apiPath(?string $path): ?string
+    {
         if (! $path || ! self::exists($path)) {
             return null;
         }
 
         $absolute = self::absolutePath($path);
         $version = $absolute ? (string) @filemtime($absolute) : null;
-        $url = url('/menus/images/' . self::normalizePath($path));
+        $relative = '/menus/images/'.self::normalizePath($path);
 
-        return $version ? $url.'?v='.$version : $url;
+        return $version ? $relative.'?v='.$version : $relative;
     }
 
     public static function exists(?string $path): bool

@@ -23,7 +23,7 @@ class MenuApiController extends Controller
                 'category' => $menu->category,
                 'most_ordered' => (bool) $menu->most_ordered,
                 'is_active' => $menu->is_active,
-                'image_url' => $menu->imageUrl(),
+                'image_url' => \App\Support\MenuImageStorage::apiPath($menu->image_path),
                 'available_servings' => $menu->maxServings(),
                 'ingredients' => $menu->rawMaterials->map(fn ($material) => [
                     'raw_material_id' => $material->id,

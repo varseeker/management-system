@@ -47,17 +47,16 @@ Route::get('/', function () {
 
 });
 
-
+// Public — POS mengambil gambar menu tanpa session login inventory.
+Route::get('/menus/images/{path}', [MenuImageController::class, 'show'])
+    ->where('path', '.*')
+    ->name('menus.image');
 
 Route::middleware('auth')->group(function () {
 
     Route::get('/borrowings/images/{path}', [BorrowingImageController::class, 'show'])
         ->where('path', '.*')
         ->name('borrowings.image');
-
-    Route::get('/menus/images/{path}', [MenuImageController::class, 'show'])
-        ->where('path', '.*')
-        ->name('menus.image');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 
