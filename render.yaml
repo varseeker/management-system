@@ -1,5 +1,13 @@
 # Render Blueprint — Sistem Manajemen Warkop Kayu (Inventory)
-# Setelah deploy, set POS_SERVICE_URL ke URL service POS di Render.
+#
+# SETEL MANUAL setelah deploy (Environment → warkop-inventory):
+#   APP_KEY              → php artisan key:generate --show (format base64:...)
+#   APP_URL              → https://warkop-inventory.onrender.com
+#   INVENTORY_API_TOKEN  → token rahasia (HARUS SAMA dengan pos-warkop-kayu)
+#   POS_SERVICE_URL      → https://pos-warkop-kayu.onrender.com
+#
+# Deploy POS (repo uc_master-main) terpisah — salin External Database URL warkop-db ke service POS.
+# Lihat DEPLOY.md bagian "Integrasi POS" dan DEPLOY.md di repo POS.
 
 databases:
   - name: warkop-db

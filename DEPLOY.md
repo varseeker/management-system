@@ -161,6 +161,57 @@ Dashboard Render → Web Service → **Logs**
 
 ---
 
+## Integrasi POS (`pos-warkop-kayu`)
+
+Inventory dan POS adalah **dua web service terpisah** di Render yang saling terhubung lewat API + database shared.
+
+### Yang harus diset di Inventory (`warkop-inventory`)
+
+| Variabel | Nilai | Keterangan |
+|----------|-------|------------|
+| `APP_URL` | `https://warkop-inventory.onrender.com` | Wajib untuk CSS/JS |
+| `INVENTORY_API_TOKEN` | token rahasia Anda | POS memakai ini sebagai Bearer token |
+| `POS_SERVICE_URL` | `https://pos-warkop-kayu.onrender.com` | Link "Kasir (POS)" di sidebar |
+
+### Yang harus diset di POS (`pos-warkop-kayu`)
+
+| Variabel | Nilai | Keterangan |
+|----------|-------|------------|
+| `APP_URL` | `https://pos-warkop-kayu.onrender.com` | Wajib untuk asset CSS/JS |
+| `DATABASE_URL` / `DB_URL` | **External Database URL** `warkop-db` | Database **sama** dengan inventory |
+| `INVENTORY_SERVICE_URL` | `https://warkop-inventory.onrender.com` | Base URL inventory |
+| `INVENTORY_API_TOKEN` | **sama persis** dengan inventory | Penghubung API |
+| `INVENTORY_SERVICE_ENABLED` | `true` | Sudah default di blueprint POS |
+| `MIDTRANS_*` | kunci Midtrans | Pembayaran QRIS di POS |
+
+### Token API (penting)
+
+```
+INVENTORY_API_TOKEN di warkop-inventory  ═══  INVENTORY_API_TOKEN di pos-warkop-kayu
+```
+
+Buat satu token kuat, paste ke **kedua** service, lalu redeploy keduanya.
+
+### Alur koneksi
+
+1. POS login → baca user dari tabel `users` (shared DB, tanpa prefix)
+2. POS sync menu → `GET {INVENTORY_SERVICE_URL}/api/menus` + Bearer token
+3. POS checkout → `POST {INVENTORY_SERVICE_URL}/api/orders` + Bearer token
+4. Inventory sidebar → link ke `{POS_SERVICE_URL}`
+
+### Verifikasi cepat
+
+```bash
+curl -H "Authorization: Bearer <INVENTORY_API_TOKEN>" \
+  https://warkop-inventory.onrender.com/api/menus
+```
+
+Login POS: `letoy@warkopkayu.test` / `password` (role **staff**).
+
+Panduan lengkap POS: lihat `DEPLOY.md` di repo `uc_master-main`.
+
+---
+
 ## Variabel lingkungan (referensi)
 
 | Variabel | Nilai production | Keterangan |
@@ -171,6 +222,8 @@ Dashboard Render → Web Service → **Logs**
 | `RUN_SEED` | `true` (opsional) | Paksa seed ulang, hapus setelah deploy |
 | `RUN_DB_RESET` | `true` (opsional) | Reset DB penuh, hapus setelah deploy |
 | `APP_URL` | URL Render Anda | **Wajib diset manual** |
+| `INVENTORY_API_TOKEN` | token rahasia | **Wajib** — samakan dengan POS |
+| `POS_SERVICE_URL` | URL service POS | **Wajib** setelah POS deploy |
 | `DB_CONNECTION` | `pgsql` | Otomatis |
 | `DB_URL` | dari database | Otomatis dari PostgreSQL |
 | `SESSION_DRIVER` | `database` | Otomatis |
