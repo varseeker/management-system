@@ -3,7 +3,7 @@
         <label class="form-label">Harga Jual (POS)</label>
         <div class="input-group">
             <span class="input-group-text">Rp</span>
-            <input type="number" name="price" class="form-control" min="0" step="500"
+            <input type="number" name="price" class="form-control" min="0" step="1"
                 value="{{ old('price', $menu->price ?? 18000) }}" required>
         </div>
     </div>

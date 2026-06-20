@@ -4,9 +4,15 @@
 
 @section('content')
 
+@if($errors->has('menu'))
+    <x-callout type="danger" title="Menu gagal disimpan" class="mb-3">
+        {{ $errors->first('menu') }}
+    </x-callout>
+@endif
+
 <div class="card dashboard-card">
     <div class="card-body">
-        <form action="{{ route('menus.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('menus.store') }}" method="POST" enctype="multipart/form-data" data-loading-message="Menyimpan menu...">
             @csrf
             <div class="mb-3">
                 <label class="form-label">Kode Menu</label>

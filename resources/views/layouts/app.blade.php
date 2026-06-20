@@ -200,6 +200,8 @@
     @include('partials.flash-error-modal')
     @include('partials.flash-messages')
     @include('partials.borrowing-photo-modal')
+    @include('partials.loading')
+    <script src="{{ asset('js/pos-loading.js') }}" defer></script>
 
     @stack('scripts')
 </body>

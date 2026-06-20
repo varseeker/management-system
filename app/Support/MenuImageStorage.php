@@ -22,7 +22,12 @@ class MenuImageStorage
         $filename = Str::random(24).'.'.$extension;
         $relativePath = $directory.'/'.$filename;
 
-        $disk->putFileAs($directory, $file, $filename);
+        $storedPath = $disk->putFileAs($directory, $file, $filename);
+
+        if ($storedPath === false) {
+            throw new \RuntimeException('Gagal menyimpan gambar menu ke penyimpanan.');
+        }
+
         self::persistPath($relativePath);
 
         return $relativePath;
@@ -160,13 +165,19 @@ class MenuImageStorage
             return false;
         }
 
-        MenuImageFile::updateOrCreate(
-            ['path' => $normalized],
-            [
-                'mime_type' => mime_content_type($diskPath) ?: 'image/jpeg',
-                'contents' => $contents,
-            ],
-        );
+        try {
+            MenuImageFile::updateOrCreate(
+                ['path' => $normalized],
+                [
+                    'mime_type' => mime_content_type($diskPath) ?: 'image/jpeg',
+                    'contents' => $contents,
+                ],
+            );
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return false;
+        }
 
         return true;
     }

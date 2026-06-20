@@ -11,4 +11,11 @@ class MenuImageFile extends Model
         'mime_type',
         'contents',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'contents' => 'binary',
+        ];
+    }
 }

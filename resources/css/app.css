@@ -1001,3 +1001,119 @@ body {
         transform: rotate(90deg);
     }
 }
+
+/* ——— Global loading (sama seperti POS) ——— */
+.pos-loading {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 2147483646 !important;
+    pointer-events: auto !important;
+    isolation: isolate;
+}
+
+.pos-loading[hidden] {
+    display: none !important;
+}
+
+.pos-loading:not([hidden]) {
+    display: block !important;
+}
+
+.pos-loading__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(1px);
+    cursor: wait;
+}
+
+.pos-loading__topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.35);
+    overflow: hidden;
+}
+
+.pos-loading__bar {
+    width: 35%;
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, #60a5fa);
+    transform: translateX(-120%);
+    transition: transform 0.25s ease, width 0.25s ease;
+}
+
+.pos-loading__bar.is-active {
+    animation: pos-loading-slide 1s ease-in-out infinite;
+}
+
+.pos-loading__bar.is-complete {
+    animation: none;
+    width: 100%;
+    transform: translateX(0);
+}
+
+.pos-loading__center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: min(260px, calc(100vw - 2rem));
+    padding: 1.1rem 1.35rem;
+    border-radius: 0.85rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.18);
+    text-align: center;
+    pointer-events: none;
+}
+
+.pos-loading__spinner {
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 3px solid rgba(37, 99, 235, 0.15);
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: pos-loading-spin 0.75s linear infinite;
+}
+
+.pos-loading__label {
+    margin: 0;
+    color: #0f172a;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+body.pos-is-loading {
+    overflow: hidden !important;
+    touch-action: none;
+    overscroll-behavior: none;
+}
+
+@keyframes pos-loading-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pos-loading-slide {
+    0% {
+        transform: translateX(-120%);
+    }
+
+    100% {
+        transform: translateX(320%);
+    }
+}

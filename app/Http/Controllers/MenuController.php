@@ -9,6 +9,7 @@ use App\Support\MenuImageStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class MenuController extends Controller
 {
@@ -28,36 +29,35 @@ class MenuController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'code' => 'required|unique:menus',
-            'name' => 'required',
-            'description' => 'nullable',
-            'price' => 'required|integer|min:0',
-            'category' => 'required|in:Snack,Non-coffee,Coffee',
-            'most_ordered' => 'nullable|boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'ingredients' => 'required|array|min:1',
-            'ingredients.*.raw_material_id' => 'required|exists:raw_materials,id',
-            'ingredients.*.quantity' => 'required|integer|min:1',
-        ]);
+        try {
+            $validated = $this->validateMenuRequest($request);
 
-        $imagePath = null;
+            $imagePath = null;
 
-        if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            $imagePath = MenuImageStorage::store($request->file('image'), $validated['code']);
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                $imagePath = MenuImageStorage::store($request->file('image'), $validated['code']);
+            }
+
+            $menu = Menu::create([
+                'code' => $validated['code'],
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'price' => $validated['price'],
+                'category' => $validated['category'],
+                'most_ordered' => $request->boolean('most_ordered'),
+                'image_path' => $imagePath,
+            ]);
+
+            $this->syncIngredients($menu, $validated['ingredients']);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'menu' => 'Gagal menambahkan menu. '.$this->friendlyErrorMessage($exception),
+                ]);
         }
-
-        $menu = Menu::create([
-            'code' => $validated['code'],
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'price' => $validated['price'],
-            'category' => $validated['category'],
-            'most_ordered' => $request->boolean('most_ordered'),
-            'image_path' => $imagePath,
-        ]);
-
-        $this->syncIngredients($menu, $validated['ingredients']);
 
         return redirect()
             ->route('menus.index')
@@ -74,39 +74,31 @@ class MenuController extends Controller
 
     public function update(Request $request, Menu $menu)
     {
-        $validated = $request->validate([
-            'code' => 'required|unique:menus,code,' . $menu->id,
-            'name' => 'required',
-            'description' => 'nullable',
-            'price' => 'required|integer|min:0',
-            'category' => 'required|in:Snack,Non-coffee,Coffee',
-            'is_active' => 'nullable|boolean',
-            'most_ordered' => 'nullable|boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'ingredients' => 'required|array|min:1',
-            'ingredients.*.raw_material_id' => 'required|exists:raw_materials,id',
-            'ingredients.*.quantity' => 'required|integer|min:1',
-        ]);
+        try {
+            $validated = $this->validateMenuRequest($request, $menu);
+            $imagePath = $this->resolveMenuImagePath($request, $menu, $validated);
 
-        $imagePath = $menu->image_path;
+            $menu->update([
+                'code' => $validated['code'],
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'price' => $validated['price'],
+                'category' => $validated['category'],
+                'most_ordered' => $request->boolean('most_ordered'),
+                'is_active' => $request->boolean('is_active'),
+                'image_path' => $imagePath,
+            ]);
 
-        if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            MenuImageStorage::delete($menu->image_path);
-            $imagePath = MenuImageStorage::store($request->file('image'), $validated['code']);
+            $this->syncIngredients($menu, $validated['ingredients']);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'menu' => 'Gagal memperbarui menu. '.$this->friendlyErrorMessage($exception),
+                ]);
         }
-
-        $menu->update([
-            'code' => $validated['code'],
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'price' => $validated['price'],
-            'category' => $validated['category'],
-            'most_ordered' => $request->boolean('most_ordered'),
-            'is_active' => $request->boolean('is_active'),
-            'image_path' => $imagePath,
-        ]);
-
-        $this->syncIngredients($menu, $validated['ingredients']);
 
         return redirect()
             ->route('menus.index')
@@ -115,8 +107,16 @@ class MenuController extends Controller
 
     public function destroy(Menu $menu)
     {
-        MenuImageStorage::delete($menu->image_path);
-        $menu->delete();
+        try {
+            MenuImageStorage::delete($menu->image_path);
+            $menu->delete();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return back()->withErrors([
+                'menu' => 'Gagal menghapus menu. '.$this->friendlyErrorMessage($exception),
+            ]);
+        }
 
         return redirect()
             ->route('menus.index')
@@ -173,6 +173,61 @@ class MenuController extends Controller
         return redirect()
             ->route('menus.sell.index')
             ->with('success', 'Stok berhasil dikurangi untuk ' . $menu->name);
+    }
+
+    private function validateMenuRequest(Request $request, ?Menu $menu = null): array
+    {
+        if ($request->has('price')) {
+            $request->merge([
+                'price' => (int) preg_replace('/\D/', '', (string) $request->input('price')),
+            ]);
+        }
+
+        $codeRule = $menu
+            ? 'required|unique:menus,code,'.$menu->id
+            : 'required|unique:menus';
+
+        return $request->validate([
+            'code' => $codeRule,
+            'name' => 'required',
+            'description' => 'nullable',
+            'price' => 'required|integer|min:0',
+            'category' => 'required|in:Snack,Non-coffee,Coffee',
+            'is_active' => 'nullable|boolean',
+            'most_ordered' => 'nullable|boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'ingredients' => 'required|array|min:1',
+            'ingredients.*.raw_material_id' => 'required|exists:raw_materials,id',
+            'ingredients.*.quantity' => 'required|integer|min:1',
+        ]);
+    }
+
+    private function resolveMenuImagePath(Request $request, Menu $menu, array $validated): ?string
+    {
+        $imagePath = $menu->image_path;
+
+        if (! $request->hasFile('image') || ! $request->file('image')->isValid()) {
+            return $imagePath;
+        }
+
+        MenuImageStorage::delete($menu->image_path);
+
+        return MenuImageStorage::store($request->file('image'), $validated['code']);
+    }
+
+    private function friendlyErrorMessage(Throwable $exception): string
+    {
+        $message = trim($exception->getMessage());
+
+        if ($message === '') {
+            return 'Silakan coba lagi.';
+        }
+
+        if (str_contains($message, 'SQLSTATE')) {
+            return 'Terjadi masalah database. Pastikan migrasi terbaru sudah dijalankan.';
+        }
+
+        return $message;
     }
 
     private function syncIngredients(Menu $menu, array $ingredients): void

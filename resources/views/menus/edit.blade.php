@@ -4,9 +4,15 @@
 
 @section('content')
 
+@if($errors->has('menu'))
+    <x-callout type="danger" title="Menu gagal disimpan" class="mb-3">
+        {{ $errors->first('menu') }}
+    </x-callout>
+@endif
+
 <div class="card dashboard-card">
     <div class="card-body">
-        <form action="{{ route('menus.update', $menu) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('menus.update', $menu) }}" method="POST" enctype="multipart/form-data" data-loading-message="Menyimpan menu...">
             @csrf
             @method('PUT')
             <div class="mb-3">
@@ -43,7 +49,7 @@
             ])
 
             <div class="mt-4">
-                <button class="btn btn-primary">Update Menu</button>
+                <button class="btn btn-primary" data-loading-message="Menyimpan menu...">Update Menu</button>
             </div>
         </form>
     </div>
