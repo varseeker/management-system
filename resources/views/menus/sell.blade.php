@@ -22,6 +22,13 @@
 
                 <p class="text-muted small">Contoh: 2 porsi Indomie Telur = 2× indomie + 2× telur</p>
 
+                @if(in_array(auth()->user()->role, ['admin', 'owner']))
+                <p class="text-muted small mb-3">
+                    Pesanan dari kasir POS otomatis masuk di
+                    <a href="{{ route('reports.orders.index') }}">Laporan Pesanan</a>.
+                </p>
+                @endif
+
 
 
                 @foreach($menus as $menu)
