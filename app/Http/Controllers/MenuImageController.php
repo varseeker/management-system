@@ -16,9 +16,18 @@ class MenuImageController extends Controller
 
         $absolute = MenuImageStorage::absolutePath($path);
 
-        abort_unless($absolute !== null && is_file($absolute), 404);
+        if ($absolute !== null && is_file($absolute)) {
+            return response()->file($absolute, [
+                'Content-Type' => MenuImageStorage::mimeType($path),
+                'Cache-Control' => 'public, max-age=31536000, immutable',
+            ]);
+        }
 
-        return response()->file($absolute, [
+        $contents = MenuImageStorage::contents($path);
+
+        abort_unless($contents, 404);
+
+        return response($contents, 200, [
             'Content-Type' => MenuImageStorage::mimeType($path),
             'Cache-Control' => 'public, max-age=31536000, immutable',
         ]);

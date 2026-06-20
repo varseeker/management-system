@@ -81,5 +81,6 @@ chown -R www-data:www-data storage public/uploads 2>/dev/null || true
 
 php artisan borrowings:sync-images-to-storage --quiet 2>/dev/null || true
 php artisan borrowings:backfill-images-db --quiet 2>/dev/null || true
+php artisan menus:backfill-images-db --quiet 2>/dev/null || true
 
 exec supervisord -c /etc/supervisord.conf

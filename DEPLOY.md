@@ -15,7 +15,20 @@ Panduan deploy **Sistem Manajemen Warkop Kayu** ke [Render.com](https://render.c
 **Catatan tier gratis:**
 - Web service **tidur** setelah ~15 menit tidak ada traffic → cold start ~30–60 detik saat pertama dibuka.
 - **Shell tidak tersedia** di tier gratis — migrasi & seed jalan otomatis saat deploy (lihat bawah).
-- Foto peminjaman disimpan di **PostgreSQL** (persisten), bukan hanya di disk container.
+- Foto peminjaman dan **gambar menu** disimpan di **PostgreSQL** (persisten), bukan hanya di disk container.
+
+---
+
+### Gambar menu hilang setelah redeploy
+
+**Penyebab:** File upload disimpan di disk container (`storage/app/public/menus/`) yang bersifat sementara di Render. Path di tabel `menus` tetap ada, tetapi file fisiknya hilang saat redeploy/restart.
+
+**Perbaikan (otomatis setelah deploy kode terbaru):**
+- Setiap upload gambar menu disalin ke **PostgreSQL** (tabel `menu_image_files`)
+- Gambar dilayani dari database jika file disk tidak ada
+- Saat deploy, `menus:backfill-images-db` mengisi ulang dari file yang masih ada di disk
+
+**Gambar lama yang sudah hilang dari disk** tidak bisa dipulihkan otomatis — unggah ulang di halaman edit menu.
 
 ---
 
