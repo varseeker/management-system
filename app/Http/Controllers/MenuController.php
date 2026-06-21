@@ -9,6 +9,7 @@ use App\Support\MenuImageStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class MenuController extends Controller
@@ -43,8 +44,9 @@ class MenuController extends Controller
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'price' => $validated['price'],
-                'category' => $validated['category'],
+                'category' => $this->resolveMenuCategory($request, $validated),
                 'most_ordered' => $request->boolean('most_ordered'),
+                'is_bundle' => $request->boolean('is_bundle'),
                 'image_path' => $imagePath,
             ]);
 
@@ -83,8 +85,9 @@ class MenuController extends Controller
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'price' => $validated['price'],
-                'category' => $validated['category'],
+                'category' => $this->resolveMenuCategory($request, $validated),
                 'most_ordered' => $request->boolean('most_ordered'),
+                'is_bundle' => $request->boolean('is_bundle'),
                 'is_active' => $request->boolean('is_active'),
                 'image_path' => $imagePath,
             ]);
@@ -192,14 +195,28 @@ class MenuController extends Controller
             'name' => 'required',
             'description' => 'nullable',
             'price' => 'required|integer|min:0',
-            'category' => 'required|in:Snack,Non-coffee,Coffee',
+            'category' => [
+                Rule::requiredIf(fn () => ! $request->boolean('is_bundle')),
+                'nullable',
+                'in:Makanan,Minuman',
+            ],
             'is_active' => 'nullable|boolean',
             'most_ordered' => 'nullable|boolean',
+            'is_bundle' => 'nullable|boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'ingredients' => 'required|array|min:1',
             'ingredients.*.raw_material_id' => 'required|exists:raw_materials,id',
             'ingredients.*.quantity' => 'required|integer|min:1',
         ]);
+    }
+
+    private function resolveMenuCategory(Request $request, array $validated): ?string
+    {
+        if ($request->boolean('is_bundle')) {
+            return null;
+        }
+
+        return $validated['category'] ?? 'Makanan';
     }
 
     private function resolveMenuImagePath(Request $request, Menu $menu, array $validated): ?string

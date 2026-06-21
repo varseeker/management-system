@@ -17,6 +17,7 @@ class Menu extends Model
         'category',
         'image_path',
         'most_ordered',
+        'is_bundle',
         'is_active',
     ];
 
@@ -25,6 +26,7 @@ class Menu extends Model
         return [
             'is_active' => 'boolean',
             'most_ordered' => 'boolean',
+            'is_bundle' => 'boolean',
             'price' => 'integer',
         ];
     }

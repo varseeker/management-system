@@ -60,9 +60,18 @@
                             @if($menu->most_ordered)
                                 <span class="badge bg-danger ms-1">Favorit</span>
                             @endif
+                            @if($menu->is_bundle)
+                                <span class="badge bg-info text-dark ms-1">Bundle</span>
+                            @endif
                         </td>
                         <td>Rp{{ number_format($menu->price, 0, ',', '.') }}</td>
-                        <td><span class="badge bg-light text-dark border">{{ $menu->category }}</span></td>
+                        <td>
+                            @if($menu->is_bundle)
+                                <span class="badge bg-info text-dark">Bundle</span>
+                            @else
+                                <span class="badge bg-light text-dark border">{{ $menu->category ?? '—' }}</span>
+                            @endif
+                        </td>
                         <td>
                             @forelse($menu->rawMaterials as $material)
                             <span class="badge bg-secondary me-1">

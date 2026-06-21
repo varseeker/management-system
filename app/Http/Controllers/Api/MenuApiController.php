@@ -22,6 +22,7 @@ class MenuApiController extends Controller
                 'price' => (int) $menu->price,
                 'category' => $menu->category,
                 'most_ordered' => (bool) $menu->most_ordered,
+                'is_bundle' => (bool) $menu->is_bundle,
                 'is_active' => $menu->is_active,
                 'image_url' => \App\Support\MenuImageStorage::apiPath($menu->image_path),
                 'available_servings' => $menu->maxServings(),

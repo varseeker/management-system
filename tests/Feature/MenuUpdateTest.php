@@ -29,7 +29,7 @@ class MenuUpdateTest extends TestCase
             'name' => 'Indomie Telur',
             'description' => 'Test',
             'price' => 18000,
-            'category' => 'Snack',
+            'category' => 'Makanan',
             'most_ordered' => false,
             'is_active' => true,
         ]);
@@ -43,7 +43,7 @@ class MenuUpdateTest extends TestCase
             'name' => 'Indomie Telur Spesial',
             'description' => 'Updated',
             'price' => '20000',
-            'category' => 'Snack',
+            'category' => 'Makanan',
             'is_active' => '1',
             'most_ordered' => '1',
             'ingredients' => [
@@ -75,7 +75,7 @@ class MenuUpdateTest extends TestCase
             'code' => 'KOPI-SUSU',
             'name' => 'Kopi Susu',
             'price' => 15000,
-            'category' => 'Coffee',
+            'category' => 'Minuman',
             'most_ordered' => false,
             'is_active' => true,
         ]);
@@ -88,7 +88,7 @@ class MenuUpdateTest extends TestCase
             'code' => 'KOPI-SUSU',
             'name' => 'Kopi Susu',
             'price' => '15000',
-            'category' => 'Coffee',
+            'category' => 'Minuman',
             'is_active' => '1',
             'image' => UploadedFile::fake()->image('kopi.jpg'),
             'ingredients' => [
