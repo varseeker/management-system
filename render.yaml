@@ -69,7 +69,7 @@ services:
           name: warkop-db
           property: connectionString
       - key: DB_SSLMODE
-        value: require
+        value: prefer
       - key: SESSION_DRIVER
         value: database
       - key: SESSION_SECURE_COOKIE

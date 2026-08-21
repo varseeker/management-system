@@ -4,6 +4,7 @@ set -e
 cd /var/www/html
 
 . /var/www/html/docker/fix-render-env.sh
+. /var/www/html/docker/wait-for-db.sh
 
 export PORT="${PORT:-8080}"
 envsubst '${PORT}' < /etc/nginx/http.d/default.conf.template > /etc/nginx/http.d/default.conf
@@ -36,6 +37,8 @@ if [ ! -f public/build/manifest.json ]; then
 fi
 
 php artisan config:clear
+
+wait_for_database
 
 # Reset penuh tanpa Shell: set RUN_DB_RESET=true di Environment, redeploy, lalu hapus variabel.
 if [ "$RUN_DB_RESET" = "true" ]; then

@@ -267,24 +267,32 @@ Perbaikan:
 
 Jangan pakai `generateValue: true` di `render.yaml` untuk `APP_KEY`.
 
+### Database SSL error (`SSL connection has been closed unexpectedly`)
+
+Penyebab umum: service di Render memaksa koneksi **External** + `sslmode=require`, padahal di private network harus pakai **Internal** URL (SSL tidak wajib).
+
+**Otomatis (deploy terbaru):** `docker/fix-render-env.sh` di runtime Render:
+- mengubah hostname `dpg-xxx-a.*.postgres.render.com` → internal `dpg-xxx-a`
+- set `DB_SSLMODE=prefer`
+- menunggu DB siap sebelum `migrate`
+
+**Manual di Dashboard (jika masih gagal):**
+
+1. PostgreSQL `warkop-db` → **Connect** → salin **Internal Database URL**
+2. Web service → Environment:
+   - `DATABASE_URL` / `DB_URL` = Internal URL
+   - `DB_SSLMODE` = `prefer`
+3. Hapus `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` jika ada
+4. Redeploy **inventory** dan **POS**
+
+> External URL + `sslmode=require` hanya untuk akses dari luar Render (lokal/CI), bukan antar service di Render.
+
 ### Database connection error (`could not translate host name "dpg-..."`)
 
-Penyebab: hostname database internal Render (`dpg-xxx-a`) tidak bisa di-resolve DNS.
+Hostname internal hanya resolve di private network Render (service + DB region/account sama).
 
-**Otomatis (setelah deploy terbaru):** `docker/fix-render-env.sh` mengubah hostname internal ke eksternal saat container start.
-
-**Manual di Render Dashboard (jika masih gagal):**
-
-1. Buka **PostgreSQL** (`warkop-db`) → tab **Info**
-2. Salin **External Database URL** lengkap:
-   `postgresql://user:pass@dpg-xxx-a.singapore-postgres.render.com:5432/warkop`
-3. **Web Service** → **Environment** → set:
-   - `DATABASE_URL` dan `DB_URL` = URL tersebut
-   - `DB_CONNECTION` = `pgsql`
-   - `DB_SSLMODE` = `require`
-   - `RENDER_REGION` = `singapore`
-4. **Hapus** `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
-5. Redeploy
+- Pastikan web service dan `warkop-db` di region yang sama (`singapore`)
+- Jangan jalankan migrate dari mesin lokal memakai Internal URL
 
 ### CSS/JS tidak load (halaman tanpa styling)
 
@@ -300,7 +308,7 @@ Penyebab umum:
 ### Database connection error (umum)
 
 - Pastikan PostgreSQL status **Available**
-- Cek `DATABASE_URL` / `DB_URL` berisi URL lengkap, bukan hostname pendek
+- Di Render: pakai **Internal** URL; di lokal: pakai **External** URL + SSL
 
 ### CSS/JS tidak load
 
@@ -309,6 +317,7 @@ Penyebab umum:
 ### Cold start lambat
 
 Normal di tier gratis. Tunggu ~30–60 detik setelah idle.
+Start script menunggu DB sampai siap sebelum migrate.
 
 ---
 

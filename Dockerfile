@@ -67,7 +67,8 @@ COPY --from=assets /app/public/build /var/www/html/public/build
 
 WORKDIR /var/www/html
 
-RUN mkdir -p \
+RUN chmod +x /var/www/html/docker/fix-render-env.sh /var/www/html/docker/wait-for-db.sh /var/www/html/docker/start.sh \
+    && mkdir -p \
         storage/framework/{cache,sessions,views} \
         storage/logs \
         storage/app/public/menus \
