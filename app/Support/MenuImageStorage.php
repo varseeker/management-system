@@ -114,9 +114,11 @@ class MenuImageStorage
             return null;
         }
 
-        return MenuImageFile::query()
-            ->where('path', $normalized)
-            ->value('contents');
+        return PostgresBinary::decode(
+            MenuImageFile::query()
+                ->where('path', $normalized)
+                ->value('contents')
+        );
     }
 
     public static function absolutePath(?string $path): ?string
@@ -166,12 +168,11 @@ class MenuImageStorage
         }
 
         try {
-            MenuImageFile::updateOrCreate(
-                ['path' => $normalized],
-                [
-                    'mime_type' => mime_content_type($diskPath) ?: 'image/jpeg',
-                    'contents' => $contents,
-                ],
+            PostgresBinary::upsert(
+                'menu_image_files',
+                $normalized,
+                mime_content_type($diskPath) ?: 'image/jpeg',
+                $contents,
             );
         } catch (\Throwable $exception) {
             report($exception);

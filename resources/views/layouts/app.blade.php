@@ -85,6 +85,13 @@
                     <i class="bi bi-credit-card"></i>
                     Laporan Pembayaran
                 </a>
+
+                <a href="{{ route('tools.smart.index') }}"
+                    class="{{ request()->is('tools*') ? 'active' : '' }}">
+
+                    <i class="bi bi-tools"></i>
+                    Tools
+                </a>
                 @endif
 
                 @if(in_array(auth()->user()->role, ['admin', 'owner', 'staff']))

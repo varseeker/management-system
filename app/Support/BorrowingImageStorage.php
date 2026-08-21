@@ -116,9 +116,11 @@ class BorrowingImageStorage
             return null;
         }
 
-        return BorrowingImageFile::query()
-            ->where('path', $normalized)
-            ->value('contents');
+        return PostgresBinary::decode(
+            BorrowingImageFile::query()
+                ->where('path', $normalized)
+                ->value('contents')
+        );
     }
 
     public static function mimeType(?string $path): string
@@ -178,12 +180,11 @@ class BorrowingImageStorage
             return false;
         }
 
-        BorrowingImageFile::updateOrCreate(
-            ['path' => $normalized],
-            [
-                'mime_type' => mime_content_type($diskPath) ?: 'image/jpeg',
-                'contents' => $contents,
-            ],
+        PostgresBinary::upsert(
+            'borrowing_image_files',
+            $normalized,
+            mime_content_type($diskPath) ?: 'image/jpeg',
+            $contents,
         );
 
         return true;

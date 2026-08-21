@@ -30,6 +30,7 @@ use App\Http\Controllers\BorrowingApprovalActionController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\BorrowingImageController;
 use App\Http\Controllers\PosReportController;
+use App\Http\Controllers\Tools\SmartDecisionController;
 
 Route::get('/', function () {
 
@@ -154,6 +155,11 @@ Route::middleware('auth')->group(function () {
             Route::get('/payments/export', [PosReportController::class, 'exportPayments'])->name('payments.export');
             Route::get('/payments', [PosReportController::class, 'indexPayments'])->name('payments.index');
             Route::get('/payments/{payment}', [PosReportController::class, 'showPayment'])->name('payments.show');
+        });
+
+        Route::prefix('tools')->name('tools.')->group(function () {
+            Route::get('/smart', [SmartDecisionController::class, 'index'])->name('smart.index');
+            Route::post('/smart/apply-favorite', [SmartDecisionController::class, 'applyFavorite'])->name('smart.apply');
         });
 
     });
