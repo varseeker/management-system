@@ -55,7 +55,8 @@ normalize_db_url() {
 
     case "$url" in
         *supabase.com*|*pooler.supabase.com*)
-            # Supabase selalu butuh SSL
+            # Supabase selalu butuh SSL (baik lokal maupun di Render)
+            export DB_SSLMODE=require
             ensure_sslmode "$url" "require"
             return 0
             ;;

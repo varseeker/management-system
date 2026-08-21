@@ -1,19 +1,16 @@
 # Render Blueprint — Sistem Manajemen Warkop Kayu (Inventory)
 #
-# SETEL MANUAL setelah deploy (Environment → warkop-inventory):
+# Database: Supabase PostgreSQL (shared dengan POS) — BUKAN Postgres Render.
+#
+# SETEL MANUAL di Environment → warkop-inventory:
 #   APP_KEY              → php artisan key:generate --show (format base64:...)
 #   APP_URL              → https://warkop-inventory.onrender.com
+#   DATABASE_URL         → Supabase Session pooler URI (port 5432), sama dengan POS
+#   DB_URL               → sama dengan DATABASE_URL
 #   INVENTORY_API_TOKEN  → token rahasia (HARUS SAMA dengan pos-warkop-kayu)
 #   POS_SERVICE_URL      → https://pos-warkop-kayu.onrender.com
 #
-# Deploy POS (repo uc_master-main) terpisah — salin External Database URL warkop-db ke service POS.
-# Lihat DEPLOY.md bagian "Integrasi POS" dan DEPLOY.md di repo POS.
-
-databases:
-  - name: warkop-db
-    databaseName: warkop_db
-    user: warkop
-    plan: free
+# Lihat SUPABASE.md dan DEPLOY.md.
 
 services:
   - type: web
@@ -61,15 +58,11 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DATABASE_URL
-        fromDatabase:
-          name: warkop-db
-          property: connectionString
+        sync: false
       - key: DB_URL
-        fromDatabase:
-          name: warkop-db
-          property: connectionString
+        sync: false
       - key: DB_SSLMODE
-        value: prefer
+        value: require
       - key: SESSION_DRIVER
         value: database
       - key: SESSION_SECURE_COOKIE

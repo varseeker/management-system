@@ -1,29 +1,22 @@
 # Setup Supabase (shared DB: Inventory + POS)
 
-Inventory dan POS memakai **satu** database PostgreSQL Supabase yang sama.
+Inventory dan POS memakai **satu** database PostgreSQL Supabase.
 
-Panduan lengkap (langkah buat project, URI, `pdo_pgsql`, migrate): lihat mirror di repo POS:
+Deploy di Render juga memakai Supabase (bukan Postgres Render). Panduan lengkap:
 
 `../Tugas_Kampus/Semester-4/Web-Pro-III/uc_master-main/SUPABASE.md`
 
-Ringkas:
+## Ringkas — Environment Render
 
-1. Buat project di [supabase.com/dashboard](https://supabase.com/dashboard)
-2. Ambil **Session** connection URI (port **5432**)
-3. Aktifkan PHP `extension=pdo_pgsql`
-4. Set di `.env` (URI sama dengan POS):
+Set di **warkop-inventory** dan **pos-warkop-kayu** (URI sama):
 
 ```env
 DB_CONNECTION=pgsql
 DB_SSLMODE=require
-DATABASE_URL=postgresql://postgres.REF:PASSWORD@HOST:5432/postgres
-DB_URL="${DATABASE_URL}"
+DATABASE_URL=postgresql://postgres.REF:PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres
+DB_URL=<sama dengan DATABASE_URL>
 ```
 
-5. Migrate Inventory **dulu**, baru POS:
+POS saja: `DB_PREFIX=pos_`
 
-```powershell
-php artisan config:clear
-php artisan migrate --force
-php artisan db:seed --force
-```
+Lalu redeploy Inventory → POS. Database Render `warkop-db` boleh dihapus.
